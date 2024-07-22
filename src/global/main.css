@@ -1,0 +1,36 @@
+:root {
+  
+    --background-color: #FCF7F4;
+  }
+  
+  ::placeholder {
+    opacity: 0.7 !important;
+  }
+  
+  body::-webkit-scrollbar {
+    width: 1px !important;
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    border-radius: 20px !important;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  @import url("https://fonts.googleapis.com/css2?family=Caprasimo&family=Poppins:ital,wght@0,300;0,500;0,600;0,700;0,800;1,300&display=swap");
+  
+  body {
+    margin: 0;
+    font-family: "Poppins";
+    scrollbar-width: none;
+    background-color: var(--background-color);
+  }
+  
+  body::-webkit-scrollbar {
+    width: 0;
+  }
+  

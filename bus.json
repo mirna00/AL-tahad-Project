@@ -1,0 +1,76 @@
+{"data" : {
+  "reservations": [
+    {
+      "id": "1",
+      "user_id": "1",
+      "orderId": "1",
+      "destination": "عمان -الاردن",
+      "seat_number": "24"
+    },
+    {
+      "id": "2",
+      "name": "محمد علاء كلاوي ",
+      "mobile_number": "0993554061",
+      "destination": "عمان -الاردن"
+    },
+    {
+      "id": "3",
+      "name": "محمد مؤمن الحجيري  ",
+      "phone_number": "0993554061",
+      "destination": "الرياض -السعودية"
+    },
+    {
+      "id": "4",
+      "name": "طاليس ",
+      "phone_number": "0993554061",
+      "destination": "عمان -الاردن"
+    },
+    {
+      "id": "5",
+      "name": "تبارك ",
+      "phone_number": "0993554061",
+      "destination": "عمان -الاردن"
+    },
+    {
+      "id": "6",
+      "name": "مجدولين ",
+      "phone_number": "0993554061",
+      "destination": "عمان -الاردن"
+    },
+    {
+      "id": "7",
+      "name": "اسماعيل ",
+      "phone_number": "0993554061",
+      "destination": "عمان -الاردن"
+    }
+  ],
+  "order": [
+    {
+      "orderId": "1",
+      "user_id": "1"
+    }
+  ],
+  "user": [
+    {
+      "user-id": "1",
+      "name": "محمد مؤمن الحجيري",
+      "mobile_number": "0993554061",
+      "age": "23",
+      "address": "الميدان",
+      "nationality": "السورية"
+    }
+  ],
+  "trip": [
+    {
+      "tripID": "1",
+      "destination_id": "1"
+    }
+  ],
+  "destination": [
+    { 
+    "id": "1",
+     "name": "JU" 
+     }
+    ]
+}
+}

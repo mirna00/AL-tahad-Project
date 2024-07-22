@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "age": 30,
+      "contact": "123456789",
+      "address": "123 Main St"
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "age": 25,
+      "contact": "987654321",
+      "address": "456 Elm St"
+    },
+    {
+      "id": "a725",
+      "name": "sdadsa",
+      "age": "2132231",
+      "number": "3213212",
+      "address": "dsfsdffd"
+    },
+    {
+      "id": "0354",
+      "name": "مؤمن الحجيري",
+      "age": "23",
+      "number": "0965456757",
+      "address": "الميدان "
+    }
+  ]
+}

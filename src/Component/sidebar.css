@@ -1,0 +1,24 @@
+.pro-sidebar > .pro-sidebar-inner {
+  background: #282828;
+  height: 100%;
+  position: relative;
+  z-index: 101;
+}
+
+.pro-sidebar > .pro-sidebar-inner > .pro-sidebar-layout .pro-sidebar-header {
+  border-bottom: 0px rgba(173, 173, 173, 0.2);
+}
+
+/* .pro-sidebar .pro-menu .pro-menu-item .active ::after{
+  position: absolute;
+  content: '';
+  width: 5px;
+  height: 100%;
+  background-color: #C18CB3;
+  left: 0;
+  top: 0;
+} */
+
+.pro-menu-item :active{
+  background-color: rgba(255, 255, 255, 0.2);
+}

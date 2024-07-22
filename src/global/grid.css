@@ -1,0 +1,25 @@
+
+
+
+.header-row {
+  background-color: #EBE6E4;
+  
+}
+
+.even-row {
+  background-color: white;
+}
+
+.odd-row {
+  background-color: #EBE6E4;
+
+}
+
+.muirtl-cveggr-MuiListItemIcon-root{
+  min-width: none;
+}
+
+div.field >.muirtl-z3c6am-MuiFormControl-root-MuiTextField-root > .muirtl-14s5rfu-MuiFormLabel-root-MuiInputLabel-root{
+  right: 28px;
+}
+
