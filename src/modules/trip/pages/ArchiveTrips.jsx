@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Button, Grid, Typography, TextField } from "@mui/material";
+import { Button, Grid, Typography, TextField,
+    Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions, } from "@mui/material";
 import Paper from "@mui/material/Paper";
+import ButtonBase from "@mui/material/ButtonBase";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core";
@@ -11,12 +16,22 @@ import AirlineSeatReclineNormalIcon from "@mui/icons-material/AirlineSeatRecline
 import Face5Icon from "@mui/icons-material/Face5";
 import { getTripsArchive,searchArcDestinatin } from "../../../api/TripsApi";
 import Autocomplete from "@mui/material/Autocomplete";
+import { styled } from '@mui/material/styles';
 
 const useStyles = makeStyles((theme) => ({
   Typography: {
     color: "#000000",
     fontFamily: "Cairo",
     fontSize: "18px",
+  },
+}));
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
   },
 }));
 
@@ -31,7 +46,8 @@ const ArchiveTrips = () => {
   const classes = useStyles();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredArchive, setFilteredArchive] = useState([]);
-  // const [selectedArchive setSelectedArchive] = useState(null);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -44,6 +60,7 @@ const ArchiveTrips = () => {
     data: fetchTripsArchive,
   } = useQuery(["trips", searchQuery], 
     () => searchArcDestinatin(searchQuery));
+
 
   useEffect(() => {
     if (isLoading) {
@@ -69,6 +86,15 @@ const ArchiveTrips = () => {
       setFilteredArchive([]);
     }
   }, [searchQuery, fetchTripsArchive]);
+
+  const handleClickOpen = (trip) => {
+    setSelectedTrip(trip);
+    setOpen(true);
+  };
+  
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   let  uniqueTripNum = [];
   if (Array.isArray(fetchTripsArchive?.data?.trips)) { // Access the array of trips using fetchTrips.data?.trips
@@ -143,7 +169,7 @@ const ArchiveTrips = () => {
                   }}
                 ></div>
               </Grid>
-              <Grid container spacing={2}>
+              <Grid container >
                 <Grid item xs={4} container direction="row" alignItems="center">
                   <Typography variant="subtitle" className={classes.Typography}>
                     {trip.starting_place}
@@ -241,6 +267,24 @@ const ArchiveTrips = () => {
                     </Button>
                   </Link>
                 </Grid>
+                <Grid item>
+  <Button
+    variant="contained"
+    style={{
+      backgroundColor: "#EBE6E4",
+      border: "1px solid #EBE6E4",
+      borderRadius: "4px",
+    }}
+    onClick={() => handleClickOpen(trip)}  >
+    <Typography
+      className={classes.Typography}
+      style={{ fontSize: "20px", fontWeight: "bold" }}
+    >
+      الأمانات
+    </Typography>
+  </Button>
+ 
+</Grid>
               </Grid>
             </Paper>
           </Grid>
@@ -299,6 +343,165 @@ const ArchiveTrips = () => {
           marginTop: "20px",
         }}
       >
+            <div>
+   
+
+   <BootstrapDialog
+onClose={handleClose}
+aria-labelledby="customized-dialog-title"
+open={open}
+>
+<DialogTitle sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">
+الأمانات
+</DialogTitle>
+<DialogContent dividers>
+
+
+
+{selectedTrip?.envelops?.length > 0 ? (
+selectedTrip.envelops.map((envelop, index) => (
+<div style={{ marginBottom: "20px" }} key={index}>
+ <Paper
+   sx={{
+     p: 2,
+     width: "500px!important",
+     minHeight: "100px",
+     display: "flex",
+     flexDirection: "column",
+     justifyContent: "center",
+     alignContent: "center",
+   }}
+ >
+   <Grid container spacing={3}>
+   <Grid item xs={4} container direction="column" justifyContent="center">
+       <div>
+         <Typography
+           variant="body2"
+           gutterBottom
+           style={{
+             fontWeight: "bold",
+             color: "black",
+             fontFamily: "Cairo",
+             fontSize: 15,
+           }}
+         >
+           <span style={{ color: "#F01E29" }}>اسم المُستقبل: </span>
+           {envelop.receiver_name }
+         </Typography>
+         <Typography
+           variant="body2"
+           style={{
+             fontWeight: "bold",
+             color: "black",
+             fontFamily: "Cairo",
+             fontSize: 15,
+           }}
+         >
+           <span style={{ color: "#F01E29" }}>رقم المُستقبل: </span>
+           {envelop.receiver_phone }
+         </Typography>
+       </div>
+     </Grid>
+     <Grid item xs={4} container direction="column" justifyContent="center">
+       <div>
+         <Typography
+           variant="body2"
+           gutterBottom
+           style={{
+             fontWeight: "bold",
+             color: "black",
+             fontFamily: "Cairo",
+             fontSize: 15,
+           }}
+         >
+           <span style={{ color: "#F01E29", marginRight:"30px" }}>اسم المُرسل: </span>
+           {envelop.user.name}
+         </Typography>
+         <Typography
+           variant="body2"
+           style={{
+             fontWeight: "bold",
+             color: "black",
+             fontFamily: "Cairo",
+             fontSize: 15,
+           }}
+         >
+           <span style={{ color: "#F01E29" }}>رقم المُرسل: </span>
+           {envelop.user.mobile_number}
+         </Typography>
+       </div>
+     </Grid>
+    
+     <Grid item xs={4}>
+       <ButtonBase sx={{ width: 128, height: 128 }}>
+         <img
+           src={`http://161.35.27.202${envelop.image}`}
+           alt={`Envelop ${index + 1}`}
+           style={{ width: "100%" }}
+         />
+       </ButtonBase>
+     </Grid>
+   </Grid>
+   <Grid container spacing={2}>
+     <Grid item xs={12} container textAlign="center" direction="column" justifyContent="center">
+       <div>
+         <Typography
+           gutterBottom
+           variant="subtitle1"
+           component="div"
+           style={{
+             fontWeight: "bold",
+             color: "black",
+             fontFamily: "Cairo",
+             fontSize: 15,
+           }}
+         >
+           <span style={{ color: "#F01E29" }}>الوصف: </span>
+           {envelop.description} 
+         </Typography>
+       </div>
+     </Grid>
+   </Grid>
+ </Paper>
+</div>
+))
+) : (
+<div style={{ marginBottom: "20px" }}>
+
+<Paper
+ sx={{
+  p: 2,
+  width: "500px!important",
+  minHeight: "100px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+}}
+ >
+ <Typography
+   variant="body1"
+   gutterBottom
+   style={{
+     fontWeight: "bold",
+     color: "black",
+     fontFamily: "Cairo",
+     fontSize: 15,
+   }}
+ >
+   لايوجد أمانات لهذه الرحلة
+ </Typography>
+</Paper>
+</div>
+)}
+
+</DialogContent>
+<DialogActions>
+<Button autoFocus onClick={handleClose}>
+ إغلاق
+</Button>
+</DialogActions>
+</BootstrapDialog>
+</div>
         {content}
       </div>
     </div>

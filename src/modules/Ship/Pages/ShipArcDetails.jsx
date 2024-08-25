@@ -18,14 +18,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TableContainer,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  DialogContentText,
+
 } from "@mui/material";
 import { makeStyles } from "@material-ui/core";
 import dayjs, { Dayjs } from "dayjs";
@@ -35,7 +28,6 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import {
   fetchShipTripDetails,
-  addShipPerson,
   fetchStuff,
 } from "../../../api/Ship";
 
@@ -158,7 +150,7 @@ const ShipArcDetails = () => {
           }}
         >
           <Link
-            to={`/الشحن/أرشيف_الشحن`}
+            to={`/dashboard/الشحن/أرشيف_الشحن`}
             style={{
               textDecoration: "none",
               fontSize: "40px",

@@ -2,7 +2,7 @@
 import { _axios } from "./axiosApi";
 
 export const getconfirmReservation = async () => {
-  const response = await _axios.get("/api/reserv/allAcceptedReservations", {});
+  const response = await _axios.get("/api/reserv/allAcceptedReservations");
   return response.data;
 };
 

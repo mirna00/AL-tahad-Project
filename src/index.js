@@ -9,6 +9,8 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./Auth/AuthProvider";
 
+
+
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -19,7 +21,7 @@ root.render(
         {/* <AuthProvider> */}
           <App />
         {/* </AuthProvider> */}
-        <ReactQueryDevtools initialIsOpen />
+        {/* <ReactQueryDevtools initialIsOpen /> */}
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>

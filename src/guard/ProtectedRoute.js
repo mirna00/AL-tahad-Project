@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 const ProtectedRoute = ({ children }) => {
   if (!!localStorageServices.getToken()) return <>{children}</>;
 
-  return <Navigate to="/login" />;
+  return <Navigate to="/" />;
 };
 
 export default ProtectedRoute;

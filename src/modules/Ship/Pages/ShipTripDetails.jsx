@@ -3,7 +3,6 @@ import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useQueryClient } from "react-query";
-import Autocomplete from "@mui/material/Autocomplete";
 import * as yup from "yup";
 import { Link, useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
@@ -96,7 +95,7 @@ const ShipTripDetails = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
-  const [selectedFoodstuff, setSelectedFoodstuff] = useState([]);
+  const [selectedFoodstuffs, setSelectedFoodstuffs] = useState([]);
 
   const gridHeaders = [
     "الاسم",
@@ -107,6 +106,7 @@ const ShipTripDetails = () => {
     "ID",
     "الوزن",
     "السعر",
+    "المواد",
   ];
 
   const [newPerson, setNewPerson] = useState({
@@ -117,13 +117,11 @@ const ShipTripDetails = () => {
     nationality: "",
     weight: "",
     id_number: "",
-    // foodstuffs: [], // Initialize as an empty array
-    shipment_trip_id: id, // Add trip_id to newPassenger state
-    user_id: "101",
-    status: "accept",
+    foodstuffs: selectedFoodstuffs,
+    user_id: 1,
+    // status: "accept",
   });
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [shipPersons, setShipPersons] = useState([]);
@@ -131,7 +129,6 @@ const ShipTripDetails = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isPersonAdded, setIsPersonAdded] = useState(false);
-  const [selectedFoodstuffs, setSelectedFoodstuffs] = useState([]);
 
   const queryClient = useQueryClient();
 
@@ -160,8 +157,8 @@ const ShipTripDetails = () => {
       const addedPerson = await addShipPersonMutation.mutateAsync({
         ...newPerson,
         shipment_trip_id: id,
-        user_id: "101",
-        status: "accept",
+        user_id: 1,
+        foodstuffs: selectedFoodstuffs,
       });
 
       setNewPerson({
@@ -172,7 +169,7 @@ const ShipTripDetails = () => {
         nationality: "",
         weight: "",
         id_number: "",
-        // foodstuffs: [],
+        foodstuffs: selectedFoodstuffs,
       });
       setValidationErrors({});
       setOpenAddDialog(false);
@@ -184,10 +181,10 @@ const ShipTripDetails = () => {
         }, {});
         setValidationErrors(validationErrors);
         setBackendErrors({});
-      } else if (typeof error === "object" && error !== null) {
+      } else if (typeof error === "object" && error == null) {
         // Assume this is the backend error object
         const backendErrorsArray = Object.entries(
-          error.response.data.errors
+          error.response.data.message
         ).map(([field, message]) => ({
           field,
           message,
@@ -201,7 +198,7 @@ const ShipTripDetails = () => {
         setSnackbarMessage(errorMessages);
         setSnackbarOpen(true);
       } else {
-        console.error("Error adding driver:", error);
+        console.error("Error :", error);
         // Handle other types of errors as needed
       }
     }
@@ -211,10 +208,6 @@ const ShipTripDetails = () => {
     setSnackbarOpen(false);
     setSnackbarMessage("");
   };
-
-  const { data: stuffs } = useQuery("sttufs", fetchStuff);
-
-  // console.log("stuffs", stuffs);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -229,6 +222,7 @@ const ShipTripDetails = () => {
   }
 
   const trip = shipTripDetails.data.shipmentTrip;
+  console.log(trip.shipment_requests.shipment_foodstuffs);
 
   return (
     <div
@@ -237,7 +231,7 @@ const ShipTripDetails = () => {
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
-        marginTop: "20px",
+        marginTop: "40px",
         overflow: "hidden",
       }}
     >
@@ -296,7 +290,7 @@ const ShipTripDetails = () => {
         <Paper
           sx={{
             p: 4,
-            width: "900px",
+            width: "1000px",
             minHeight: "400px",
             marginBottom: "30px",
             display: "flex",
@@ -362,7 +356,11 @@ const ShipTripDetails = () => {
                 }}
               >
                 <Typography variant="subtitle" className={classes.typography}>
-                  {trip.type}
+                  {trip.type === "Public"
+                    ? "عام"
+                    : trip.type === "Private"
+                    ? "خاص"
+                    : ""}
                 </Typography>
               </Box>
               <Box
@@ -574,30 +572,6 @@ const ShipTripDetails = () => {
                       error={!!validationErrors.weight}
                       helperText={validationErrors.weight}
                     />{" "}
-             {/* <Autocomplete
-    multiple
-    options={stuffs?.data?.allFood || []}
-    getOptionLabel={(option) => option?.stuff || ""}
-    isOptionEqualToValue={(option, value) => option?.id === value?.id}
-    value={selectedFoodstuffs}
-    onChange={(event, newValues) => {
-      setSelectedFoodstuffs(newValues);
-      setNewPerson({
-        ...newPerson,
-        foodstuffs: newValues.map((item) => ({
-          foodstuff_id: item.id,
-        })),
-      });
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        variant="outlined"
-        label="المواد"
-        style={{ marginTop: "20px", width: "300px" }}
-      />
-    )}
-  /> */}
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={() => setOpenAddDialog(false)}>
@@ -717,6 +691,16 @@ const ShipTripDetails = () => {
                               {request.price}
                             </Typography>
                           )}
+                          {header === "المواد" && (
+                            <Typography
+                              variant="subtitle"
+                              className={classes.Typography}
+                            >
+                              {request.shipment_foodstuffs
+                                .map((foodstuff) => foodstuff.foodstuff.stuff)
+                                .join(", ")}
+                            </Typography>
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -743,7 +727,7 @@ const ShipTripDetails = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Ship Added successfully
+            تم إضافة الشحنة بنجاح
           </Alert>
         </Snackbar>
       )}

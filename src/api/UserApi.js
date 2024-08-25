@@ -7,11 +7,14 @@ export const getUser = async () => {
   return response.data;
 };
 
+export const deleteUser = async (id) => {
+  return await _axios.delete(`/api/user/delete/${id}`);
+};
+
 export const getComplaint = async () => {
   const response = await _axios.get(
     "/api/feedback/all"
   ); // Replace with your API endpoint
-  const data = await response.json();
   return response.data;
 };
 

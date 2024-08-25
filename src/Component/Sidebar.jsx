@@ -155,9 +155,17 @@ const Sidebar = ({ selectedMenuItem }) => {
       .then(() => {
         localStorageServices.deleteToken();
         localStorageServices.deleteUser();
-        navigate("/login");
+        navigate("/");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        // Handle the 401 (Unauthorized) error
+        if (err.response && err.response.status === 401 ) {
+          localStorageServices.deleteToken();
+          localStorageServices.deleteUser();
+          navigate("/login");
+        }
+      });
   };
 
   return (
@@ -188,7 +196,7 @@ const Sidebar = ({ selectedMenuItem }) => {
             />
           ))}
         </Menu>
-        <Button onClick={handleLogout} style={{color:"antiquewhite"}}><Typography> Logout</Typography>
+        <Button onClick={handleLogout} style={{color:"antiquewhite"}}><Typography> تسجيل الخروج </Typography>
          </Button>
       </ProSidebar>
     </Box>

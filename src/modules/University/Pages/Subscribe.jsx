@@ -29,9 +29,6 @@ const Subscribe = () => {
   const [approvalStatus, setApprovalStatus] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [acceptSuccess, setAcceptSuccess] = useState(false);
-  const [backendErrors, setBackendErrors] = useState({});
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
@@ -82,30 +79,24 @@ const Subscribe = () => {
   };
 
   
-  const uniqueDriver = Array.from(
+  const uniqueSubscribe = Array.from(
     new Map(
-      fetchSubscribe?.data?.map((user) => [user.user?.name, user])
+      (fetchSubscribe?.data.data || []).map((user) => [user.user?.name, user])
     ).values()
   );
  
   let content;
   if (isLoading) {
     content = <div>Loading...</div>;
-  } else if (
-    searchQuery &&
-    (!fetchSubscribe ||
-      !fetchSubscribe?.data ||
-      fetchSubscribe?.data?.length === 0)
-  ) {
-    content = <p>No search result available.</p>;
-  } else if (
-    !fetchSubscribe ||
-    !fetchSubscribe?.data ||
-    fetchSubscribe?.data?.length === 0
+  }
+   else if (
+    !fetchSubscribe.data ||
+    !fetchSubscribe?.data.data ||
+    fetchSubscribe?.data.data?.length === 0
   ) {
     content = <p>No Subscription available.</p>;
   } else {
-    const filteredSubscribe = fetchSubscribe.data?.filter((user) =>
+    const filteredSubscribe = fetchSubscribe?.data?.data.filter((user) =>
       user.user.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -254,7 +245,7 @@ const Subscribe = () => {
         طلبات الاشتراك
       </Typography>
       <Autocomplete
-        options={uniqueDriver}
+        options={uniqueSubscribe}
         getOptionLabel={(option) => option?.user?.name || ""}
         isOptionEqualToValue={(option, value) =>
           option?.user?.name === value?.user?.name
@@ -264,7 +255,7 @@ const Subscribe = () => {
           <TextField
             {...params}
             variant="standard"
-            label="الاسم"
+            label="search by name"
             style={{ marginTop: "20px", width: "300px" }}
             onChange={(event) => setSearchQuery(event.target.value)}
           />
@@ -295,7 +286,7 @@ const Subscribe = () => {
               variant="filled"
               sx={{ width: "100%" }}
             >
-              A Sub Added successfully
+              تم إضافة اشتراك
             </Alert>
           </Snackbar>
         )}
@@ -330,7 +321,7 @@ const Subscribe = () => {
               variant="filled"
               sx={{ width: "100%" }}
             >
-              A Sub deleted successfully
+              تم حذف اشتراك
             </Alert>
           </Snackbar>
         )}

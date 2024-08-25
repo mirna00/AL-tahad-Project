@@ -2,7 +2,11 @@ import axios from "axios";
 import { localStorageServices } from "./tokenService";
 
 export const _axios = axios.create({
-  baseURL: "http://91.144.20.117:7109/",
+  baseURL: "http://161.35.27.202",
+  withCredentials: false,
+  headers:{
+    "Access-Control-Allow-Origin":"*"
+  }
 });
 
 _axios.defaults.headers.common[

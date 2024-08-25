@@ -84,11 +84,18 @@ export const fetchDestinations = async () => {
     return await _axios.post("/api/shipmentTrip/add_truck", truck);
   };
 
+  // export const fetchStuff = async () => {
+  //   const response= await _axios.get("/api/shipmentRequest/allFoodstuffs",{
+ 
+  // });
+  // return response.data;
+
+  // };
+
   export const fetchStuff = async () => {
-    return await _axios.get("/api/shipmentRequest/allFoodstuffs",{
-     
-  });
-    // return response.data;
+    const response = await _axios.get('/api/shipmentRequest/allFoodstuffs');
+    const data = await response.json();
+    return data.map((item) => ({ id: item.id, stuff: item.name }));
   };
 
   export const addStuff = async (stuff) => {

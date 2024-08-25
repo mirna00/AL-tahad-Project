@@ -14,9 +14,11 @@ import {
   DialogContentText,
   Box,
   Radio,
-  ImageList,ImageListItem
+  ImageList,
+  ImageListItem,
 } from "@mui/material";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ButtonBase from "@mui/material/ButtonBase";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import * as Yup from "yup";
@@ -29,7 +31,6 @@ import {
   addImageOfSeats,
   allImageOfSeats,
 } from "../../../api/busApi";
-import axios from "axios";
 
 const validationSchema = Yup.object().shape({
   image: Yup.mixed()
@@ -58,7 +59,7 @@ const Bus = () => {
     type: "",
     bus_number: "",
     number_of_seats: "",
-    image_of_buse_id: null,
+    image_of_buse_id: [],
   });
 
   const [img, setImg] = useState({
@@ -77,7 +78,10 @@ const Bus = () => {
   const [backendErrors, setBackendErrors] = useState({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageShow, setimageShow] = useState(null);
 
+  
   const queryClient = useQueryClient();
   const [selectedImageId, setSelectedImageId] = useState(null);
 
@@ -104,11 +108,14 @@ const Bus = () => {
       bus_number: "",
       number_of_seats: "",
     });
+    setimageShow(null); // Reset the image preview
+    // setImagePreview([]); // 
   };
 
   const { mutate } = useMutation(addBus, {
     onSuccess: () => {
       queryClient.invalidateQueries("buses");
+      
       setIsBusAdded(true);
       // setSnackbarMessage("Bus added successfully");
       // setSnackbarOpen(true);
@@ -125,15 +132,15 @@ const Bus = () => {
         setValidationErrors(validationErrors);
         setBackendErrors({});
       } else if (typeof error === "object" && error !== null) {
-        const backendErrorsArray = Object.entries(error.response.data.errors).map(
-          ([field, message]) => ({
-            field,
-            message,
-          })
-        );
+        const backendErrorsArray = Object.entries(
+          error.response.data.errors
+        ).map(([field, message]) => ({
+          field,
+          message,
+        }));
         setBackendErrors(backendErrorsArray);
         setValidationErrors({}); // Clear validation errors
-  
+
         const errorMessages = backendErrorsArray
           .map(({ message }) => message)
           .join(", ");
@@ -146,23 +153,26 @@ const Bus = () => {
   });
 
   const addimgSeat = useMutation(addImageOfSeats, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("images");
-      // Reset the form
-      setImageAdded(true);
+    onSuccess: (newImage) => {
+      // Update state with the new image
+     
+      // Optionally, reset preview and close dialog
+      setImagePreview(URL.createObjectURL(img.image));
+      setOpenAddImage(false);
+      setImg({ image: null });
+      setImageAdded(true)
     },
     onError: (error) => {
       console.error("Error adding bus:", error);
     },
   });
+
   const handleAddSimg = async (event) => {
     event.preventDefault();
     try {
       const formData = new FormData();
       formData.append("image", img.image);
       await addimgSeat.mutateAsync(formData);
-      setOpenAddImage(false);
-      setImg({ image: null });
       event.target.reset(); // Reset the file input field
     } catch (error) {
       console.error("Error adding image:", error);
@@ -170,7 +180,13 @@ const Bus = () => {
   };
 
   const handleChangeImage = (event) => {
-    setImg({ image: event.target.files[0] });
+    const selectedImage = event.target.files[0];
+    setImg({ image: selectedImage });
+
+    // Set the preview URL for the selected image
+    if (selectedImage) {
+      setImagePreview(URL.createObjectURL(selectedImage));
+    }
   };
 
   const deleteBusMutation = useMutation(deleteBus, {
@@ -201,20 +217,24 @@ const Bus = () => {
     setSnackbarOpen(false);
     setSnackbarMessage("");
   };
-  const handleDialogClose = () => {
+  const handleClose = () => {
     setOpenAddDialog(false);
     resetForm();
   };
 
   const handleChange = (event) => {
     const { name, files } = event.target;
-
-    if (name === "image") {
+  
+    if (name === "image" && files.length > 0) {
+      const selectedImage = files[0];
       setFormData((prevData) => ({
         ...prevData,
-        image: files[0],
+        image: selectedImage,
       }));
-    } else if (name === "image_of_buse_id") {
+      
+      // Set the image preview for the selected image
+      setimageShow(URL.createObjectURL(selectedImage));
+    } else if (name === "image_of_buse_id" && files.length > 0) {
       const newImageArray = Array.from(files).map((file, index) => ({
         id: index,
         image: file,
@@ -223,6 +243,10 @@ const Bus = () => {
         ...prevData,
         image_of_buse_id: newImageArray,
       }));
+      
+      // Optionally, set previews for multiple images
+      const previewUrls = newImageArray.map((file) => URL.createObjectURL(file.image));
+      setimageShow(previewUrls); // Assume `setImagePreviews` handles multiple previews
     } else {
       setFormData((prevData) => ({
         ...prevData,
@@ -230,18 +254,16 @@ const Bus = () => {
       }));
     }
   };
-
-
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     const formDataToSend = new FormData();
     formDataToSend.append("image", formData.image);
     formDataToSend.append("type", formData.type);
     formDataToSend.append("bus_number", formData.bus_number);
     formDataToSend.append("number_of_seats", formData.number_of_seats);
     formDataToSend.append("image_of_buse_id", formData.image_of_buse_id);
-  
+
     try {
       const data = await mutate(formDataToSend);
       setValidationErrors({});
@@ -282,7 +304,7 @@ const Bus = () => {
         <Button onClick={() => setOpenAddImage(true)}>صورة توضيحية</Button>
 
         <Dialog open={openaddImage} onClose={() => setOpenAddImage(false)}>
-          <DialogTitle>إضافة صور توضيحية جديدة</DialogTitle>
+          <DialogTitle >إضافة صور توضيحية جديدة</DialogTitle>
           <form onSubmit={handleAddSimg}>
             <DialogContent>
               <input
@@ -290,12 +312,23 @@ const Bus = () => {
                 id="image"
                 onChange={handleChangeImage}
                 required
-                margin="normal"
               />
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Image Preview"
+                  style={{
+                    maxWidth: "100%",
+                    marginTop: "10px",
+                    display: "block",
+                  }}
+                />
+              )}
             </DialogContent>
             <DialogActions>
-              <Button type="submit">Add Image</Button>
-              <Button onClick={() => setOpenAddImage(false)}>Cancel</Button>
+            <Button onClick={() => setOpenAddImage(false)}>إلغاء</Button>
+              <Button type="submit">إضافة</Button>
+              
             </DialogActions>
           </form>
         </Dialog>
@@ -317,7 +350,7 @@ const Bus = () => {
                   <Grid item>
                     <ButtonBase sx={{ width: 128, height: 128 }}>
                       <img
-                        src={`http://91.144.20.117:7109${bus.image}`}
+                        src={`http://161.35.27.202${bus.image}`}
                         alt="Bus"
                         style={{ width: "100%" }}
                       />
@@ -374,27 +407,31 @@ const Bus = () => {
                     </div>
                   </Grid>
                   <Grid item>
-                    <Typography
+                    <IconButton
                       sx={{ cursor: "pointer" }}
-                      variant="body2"
                       onClick={() => handleDeleteBus(bus)}
                     >
-                      Remove
-                    </Typography>
+                      <DeleteIcon />
+                    </IconButton>
                   </Grid>
                 </Grid>
               </Paper>
             </div>
           ))
         ) : (
-          <Typography variant="body2">No buses found.</Typography>
+          <Typography variant="body2">لا يوجد باصات</Typography>
         )}
       </div>
 
       {/* for add bus */}
-      <Button onClick={() => setOpenAddDialog(true)}>Add Bus</Button>
+      <Button onClick={() => setOpenAddDialog(true)}>إضافة باص</Button>
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-        <DialogTitle>إضافة باص جديد</DialogTitle>
+        <DialogTitle
+         style={{fontWeight:'bold'}} sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title"
+        
+        >
+          إضافة باص جديد
+        </DialogTitle>
 
         <form onSubmit={handleSubmit} autoComplete="off">
           <Box
@@ -445,53 +482,77 @@ const Bus = () => {
             <Box display="flex" flexDirection="column" gap={2}>
               <Box>
                 <label htmlFor="image">Image</label>
+                
                 <input
                   type="file"
                   id="image"
                   name="image"
                   onChange={handleChange}
-                  // error={!!validationErrors.image}
-                  // helperText={validationErrors.image}
+                  
+                
                 />
+
+{imageShow && (
+                <img
+                  src={imageShow}
+                  alt="imageShow"
+                  style={{
+                    maxWidth: "100%",
+                    marginTop: "10px",
+                    display: "block",
+                  }}
+                />
+              )}
               </Box>
 
               <Box>
-  {isLoading ? (
-    <CircularProgress />
-  ) : isError ? (
-    <div>Error loading bus images</div>
-  ) : (
-    <Box>
-      <Box display="flex" alignItems="center" mb={2}>
-        <label htmlFor="image_of_buse_id">Image of Bus ID</label>
-      </Box>
-      <Grid container spacing={2}>
-        {BusImage?.data.imageBus?.map((image) => (
-          <Grid item xs={3} key={image.id}>
-            <img
-              src={`http://91.144.20.117:7109${image.image}`}
-              alt={`Bus ID ${image.id}`}
-              style={{
-                cursor: "pointer",
-                maxWidth: "100%",
-                height: "auto",
-                border:
-                  formData.image_of_buse_id === image.id
-                    ? "2px solid blue"
-                    : "none",
-              }}
-              onClick={() => handleImageClick(image.id)}
-            />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
-  )}
-</Box>
+                {isLoading ? (
+                  <CircularProgress />
+                ) : isError ? (
+                  <div>Error loading bus images</div>
+                ) : (
+                  <Box>
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <label htmlFor="image_of_buse_id">Image of Bus ID</label>
+                    </Box>
+                    <Grid container spacing={2}>
+                      {BusImage?.data.imageBus?.map((image) => (
+                        <Grid item xs={3} key={image.id}>
+                          <img
+                            src={`http://161.35.27.202${image.image}`}
+                            alt={`Bus ID ${image.id}`}
+                            style={{
+                              cursor: "pointer",
+                              maxWidth: "100%",
+                              height: "auto",
+                              border:
+                                formData.image_of_buse_id === image.id
+                                  ? "2px solid blue"
+                                  : "none",
+                            }}
+                            onClick={() => handleImageClick(image.id)}
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
+                )}
+              </Box>
             </Box>
 
-            <Box>
-            <Button type="submit" variant="contained" style={{marginRight:"10px"}} onClick={() => setOpenDeleteDialog(false)}>إلغاء</Button>
+            <Box
+              display="flex"
+              justifyContent="flex-end" // Center horizontally
+              alignItems="center" // Center vertically (if needed)
+              marginTop={2} // Optional: add some space above
+            >
+              <Button
+                onClick={handleClose}
+                variant="contained"
+                style={{ marginRight: "10px" }}
+              >
+                إلغاء
+              </Button>
               <Button type="submit" variant="contained">
                 إضافة باص
               </Button>
@@ -530,7 +591,7 @@ const Bus = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Bus deleted successfully
+            تم حذف الباص بنجاح
           </Alert>
         </Snackbar>
       )}
@@ -566,13 +627,13 @@ const Bus = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Bus Added successfully
+            تم إضافة الباص 
           </Alert>
         </Snackbar>
       )}
       {isImageAdded && (
         <Snackbar
-          open={isBusAdded}
+          open={isImageAdded}
           autoHideDuration={6000}
           onClose={() => setImageAdded(false)}
           anchorOrigin={{
@@ -586,7 +647,7 @@ const Bus = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Image Added successfully
+            تم إضافة صورة جديدة
           </Alert>
         </Snackbar>
       )}

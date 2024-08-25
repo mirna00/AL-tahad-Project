@@ -135,7 +135,7 @@ const ShipRequstDetails = () => {
   }
 
   const request = rqustsDetails.data.shipmentRequest;
-  console.log(request);
+  const stuff = rqustsDetails.data.shipmentRequest.shipment_foodstuffs.map((item) => item.foodstuff.stuff);  console.log(request);
 
   return (
     <div
@@ -371,7 +371,7 @@ const ShipRequstDetails = () => {
                 </Grid>
                 <Grid
                   item
-                  xs={12}
+                  xs={6}
                   container
                   direction="column"
                   alignItems="center"
@@ -399,6 +399,34 @@ const ShipRequstDetails = () => {
                 </Grid>
                 <Grid
                   item
+                  xs={6}
+                  container
+                  direction="column"
+                  alignItems="center"
+                >
+                  <Typography variant="subtitle" className={classes.Typography}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        color: "#5151ff",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      المواد الغذائية:
+                    </div>{" "}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
+      {stuff.join(", ")}
+                    </div>
+                  </Typography>
+                </Grid>
+                <Grid
+                  item
                   container
                   direction="column"
                   alignItems="center"
@@ -416,8 +444,8 @@ const ShipRequstDetails = () => {
                             aria-label="info about ID"
                             onClick={() =>
                               handleItemClick({
-                                image_url: `http://91.144.20.117:7109${request.image_of_ID}`,
-                                pdf_url: `http://91.144.20.117:7109${request.image_of_ID}`,
+                                image_url: `http://161.35.27.202${request.image_of_ID}`,
+                                pdf_url: `http://161.35.27.202${request.image_of_ID}`,
                               })
                             }
                           >
@@ -438,8 +466,8 @@ const ShipRequstDetails = () => {
                             aria-label="info about Passport"
                             onClick={() =>
                               handleItemClick({
-                                image_url: `http://91.144.20.117:7109${request.image_of_commercial_register}`,
-                                pdf_url: `http://91.144.20.117:7109${request.image_of_commercial_register}`,
+                                image_url: `http://161.35.27.202${request.image_of_commercial_register}`,
+                                pdf_url: `http://161.35.27.202${request.image_of_commercial_register}`,
                               })
                             }
                           >
@@ -460,8 +488,8 @@ const ShipRequstDetails = () => {
                             aria-label="info about industrial_register"
                             onClick={() =>
                               handleItemClick({
-                                image_url: `http://91.144.20.117:7109${request.image_of_industrial_register}`,
-                                pdf_url: `http://91.144.20.117:7109${request.image_of_industrial_register}`,
+                                image_url: `http://161.35.27.202${request.image_of_industrial_register}`,
+                                pdf_url: `http://161.35.27.202${request.image_of_industrial_register}`,
                               })
                             }
                           >
@@ -474,7 +502,7 @@ const ShipRequstDetails = () => {
                       key={`customs_declaration-${request.image_of_customs_declaration}`}
                     >
                       <img
-                        // src={`http://91.144.20.117:7109${request.image_of_customs_declaration}`}
+                        // src={`http://161.35.27.202${request.image_of_customs_declaration}`}
                         src={sec}
                         alt="المواد الغذائية"
                         loading="lazy"
@@ -487,8 +515,8 @@ const ShipRequstDetails = () => {
                             aria-label="info about Visa"
                             onClick={() =>
                               handleItemClick({
-                                image_url: `http://91.144.20.117:7109${request.image_of_customs_declaration}`,
-                                pdf_url: `http://91.144.20.117:7109${request.image_of_customs_declaration}`,
+                                image_url: `http://161.35.27.202${request.image_of_customs_declaration}`,
+                                pdf_url: `http://161.35.27.202${request.image_of_customs_declaration}`,
                               })
                             }
                           >
@@ -510,8 +538,8 @@ const ShipRequstDetails = () => {
                             aria-label="info about Visa"
                             onClick={() =>
                               handleItemClick({
-                                image_url: `http://91.144.20.117:7109${request.image_of_pledge}`,
-                                pdf_url: `http://91.144.20.117:7109${request.image_of_pledge}`,
+                                image_url: `http://161.35.27.202${request.image_of_pledge}`,
+                                pdf_url: `http://161.35.27.202${request.image_of_pledge}`,
                               })
                             }
                           >

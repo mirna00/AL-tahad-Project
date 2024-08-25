@@ -62,6 +62,7 @@ export const searchArcDestinatin = async (searchQuery) => {
 
 
 
+
 // export const searchDestination = async (searchQuery) => {
 //   const response = await _axios.get(
 //     "/api/trip/getTripsByDestinationInAllTrips",
@@ -77,7 +78,13 @@ export const searchArcDestinatin = async (searchQuery) => {
 
 
 export const addDestination = async (destination) => {
-  return await _axios.post("/api/destination/add_destination", destination);
+  try {
+    const response = await _axios.post("/api/destination/add_destination", { name: destination });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding destination:", error);
+    throw error;
+  }
 };
 
 export const addPassenger = async (newPassenger) => {

@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import dayjs from "dayjs";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   getconfirmReservation,
   confirmReservation,
@@ -248,68 +249,42 @@ const InPrograss = () => {
                   </Typography>
                 </Grid>
               </Grid>
+              <Grid item >
+                 
+                  <IconButton
+                      sx={{ cursor: "pointer" }}
+                      onClick={() => handleDeleteResrvation(reservation)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                </Grid>
               <Grid
                 item
                 direction="column"
                 alignItems="center"
                 justifyContent="center"
               >
-                {/* <Grid
-                  item
-                  xs={3}
-                  container
-                  direction="column"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Link
-                    to={`/السفر/reservations/${reservation.reservation_id}`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <Button
-                     
-                      style={{
-                        backgroundColor: "#EBE6E4",
-                        border: "1px solid #EBE6E4",
-                        borderRadius: "4px",
-                        marginBottom:"4px"
-                      }}
-                    >
-                      <Typography
-                        className={classes.Typography}
-                        style={{ fontSize: "20px", fontWeight: "bold" }}
-                      >
-                        التفاصيل
-                      </Typography>{" "}
-                    </Button>
-                  </Link>
-                </Grid> */}
+               
                 <Grid
                   item
-                  xs={3}
+                  
                   container
-                  direction="column"
+                  direction="row"
                   alignItems="center"
                   justifyContent="center"
                 >
                   <Link
-                    to={`/dashboard/السفر/الرحلات/trips/${reservation.trip_id}`}
+                    to={`/dashboard/السفر/الرحلات/`}
                     style={{ textDecoration: "none" }}
                   >
                     <Button
+                   variant="text"
                       onClick={() => handleConfirm(reservation.reservation_id)}
-                      style={{
-                        backgroundColor: "#EBE6E4",
-                        border: "1px solid #EBE6E4",
-                        borderRadius: "4px",
-                        marginBottom: "4px",
-                        height: "auto",
-                        width: "auto",
-                      }}
+                     
                     >
                       <Typography
                         className={classes.Typography}
-                        style={{ fontSize: "20px", fontWeight: "bold" }}
+                        style={{ fontSize: "20px"}}
                       >
                         تم التثبيت
                      
@@ -317,15 +292,7 @@ const InPrograss = () => {
                     </Button>
                   </Link>
                 </Grid>
-                <Grid item>
-                  <Typography
-                    sx={{ cursor: "pointer", color: "#F01E29" }}
-                    variant="filled"
-                    onClick={() => handleDeleteResrvation(reservation)}
-                  >
-                    Remove
-                  </Typography>
-                </Grid>
+                
               </Grid>
             </Paper>
           </div>
@@ -398,7 +365,7 @@ const InPrograss = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Request deleted successfully
+            تم حذف الطلب
           </Alert>
         </Snackbar>
       )}

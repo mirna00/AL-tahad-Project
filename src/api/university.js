@@ -40,6 +40,16 @@ export const fetchTripsUniDetails = async (id) => {
   return response.data;
 };
 
+export const fetchTripsUniArchDetails= async (id) => {
+  // Make an API call or retrieve the data from a source using the ID
+  // Replace this with your actual API call or data retrieval logic
+  const response = await _axios.get(
+    `/api/collage_trips/archived/details/${id}`
+  );
+  // const data = await response.json();
+  return response.data;
+};
+
 export const handleApprove = async (subscriptionId) => {
   try {
     const response = await _axios.post(

@@ -150,21 +150,26 @@ const ShipTrips = () => {
         }, {});
         setValidationErrors(validationErrors);
         setBackendErrors({});
-      } else if (typeof error === "object" && error !== null) {
-        // Assume this is the backend error object
-        const backendErrorsArray = Object.entries(error.response.data.errors).map(
-          ([field, message]) => ({
-            field,
-            message,
-          })
-        );
+      } else if (error.response && error.response.data) {
+        // Handle backend errors
+        let backendErrorsArray = [];
+        if (typeof error.response.data === 'object' && error.response.data !== null) {
+          backendErrorsArray = Object.entries(error.response.data).map(
+            ([field, message]) => ({
+              field,
+              message,
+            })
+          );
+        } else {
+          backendErrorsArray = [{ field: 'general', message: error.response.data }];
+        }
         setBackendErrors(backendErrorsArray);
         setValidationErrors({}); // Clear validation errors
-
+    
         // Set the Snackbar state
         const errorMessages = backendErrorsArray
           .map(({ message }) => message)
-          
+          .join(", ");
         setSnackbarMessage(errorMessages);
         setSnackbarOpen(true);
       } else {
@@ -274,7 +279,7 @@ const ShipTrips = () => {
     !fetchShippment?.data.allTrips ||
     fetchShippment?.data.allTrips?.length === 0
   ) {
-    content = <p>No trips available.</p>;
+    content = <p>لا يوجد رحل مُتاحة</p>;
   } else {
     const filteredShip = fetchShippment?.data.allTrips.filter((ship) =>
       ship.destination.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -354,7 +359,7 @@ const ShipTrips = () => {
                       marginRight: "30px",
                     }}
                   >
-                    {ship.type}
+                  {ship.type === 'Public' ? 'عام' : ship.type === 'Private' ? 'خاص' : ''}
                   </Typography>
                 </Grid>
                 <Grid
@@ -610,8 +615,8 @@ const ShipTrips = () => {
                 }
                 sx={{ width: "100px" ,marginRight:"30px"}}
               >
-                <MenuItem value="Public">Public</MenuItem>
-                <MenuItem value="Private">Private</MenuItem>
+                <MenuItem value="Public"> عام</MenuItem>
+                <MenuItem value="Private">خاص </MenuItem>
               </Select>
 
               <Autocomplete
@@ -724,7 +729,7 @@ const ShipTrips = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            A Trip Added successfully
+            تم إضافة شحنة بنجاح
           </Alert>
         </Snackbar>
       )}
@@ -764,7 +769,7 @@ const ShipTrips = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            A Trip move to archive successfully
+            انتقلت الرحلة إلى أرشيف الرحلات
           </Alert>
         </Snackbar>
       )}

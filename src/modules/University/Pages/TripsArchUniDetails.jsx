@@ -17,23 +17,15 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TableContainer,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  DialogContentText,
-  Modal,
+
 } from "@mui/material";
 import { makeStyles } from "@material-ui/core";
 import dayjs, { Dayjs } from "dayjs";
 import SubdirectoryArrowLeftRoundedIcon from "@mui/icons-material/SubdirectoryArrowLeftRounded";
 import DangerousIcon from "@mui/icons-material/Dangerous";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
-import { deleteUniTrip, fetchTripsUniDetails } from "../../../api/university";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import {  fetchTripsUniArchDetails } from "../../../api/university";
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 const dayTranslations = {
   Sunday: "الأحد",
@@ -83,7 +75,7 @@ const validationSchema = Yup.object().shape({
   nationality: Yup.string().required("Please enter a nationality"),
 });
 
-const TripsUniDetails = () => {
+const TripsArchUniDetails = () => {
   const { id } = useParams();
   const classes = useStyles();
   const navigate = useNavigate();
@@ -112,7 +104,7 @@ const TripsUniDetails = () => {
     isError,
     error,
     data: tripsUniDetails,
-  } = useQuery(["tripUni", id], () => fetchTripsUniDetails(id));
+  } = useQuery(["tripUni", id], () => fetchTripsUniArchDetails(id));
 
   const [selectedTrip, setSelectedTrip] = useState(null);
 
@@ -128,21 +120,8 @@ const TripsUniDetails = () => {
     setSelectedTrip(null);
   };
 
-  const deleteTripUniMutate = useMutation(deleteUniTrip, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("tripUni");
-      navigate("/dashboard/الجامعات/"); // Navigate to the new page
-    },
-  });
-  const handleDeleteTrip = (trip) => {
-    setConfirmDeleteId(trip.id); // Set the ID of the driver to be deleted
-    setOpenDeleteDialog(true);
-  };
 
-  const handleConfirmDelete = () => {
-    deleteTripUniMutate.mutate(confirmDeleteId);
-    setOpenDeleteDialog(false);
-  };
+
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -169,7 +148,7 @@ const TripsUniDetails = () => {
         overflow: "hidden",
       }}
     >
-      <div
+  <div
         style={{
           display: "grid",
           gridTemplateColumns: "3fr 13fr 6fr",
@@ -178,7 +157,7 @@ const TripsUniDetails = () => {
       >
         <div style={{ display: "flex" }}>
           <Link
-            to={`/dashboard/الجامعات/`}
+            to={`/dashboard/الجامعات/أرشيف_الجامعات`}
             style={{
               textDecoration: "none",
               fontSize: "40px",
@@ -199,11 +178,11 @@ const TripsUniDetails = () => {
             gap: "8px",
           }}
         >
-          <IconButton onClick={() => handleDeleteTrip(trip)}>
-            <DangerousIcon />
-          </IconButton>
+     
         </div>
-      </div>
+      </div> 
+
+
 
       <Typography
         variant="h1"
@@ -256,7 +235,7 @@ const TripsUniDetails = () => {
               direction="row"
               justifyContent="center"
               alignItems="center"
-              style={{ marginLeft: "50px", marginRight: "50px" }}
+              style={{marginLeft:"50px", marginRight:"50px"}}
             >
               {trip?.days?.map((day) => (
                 <Typography
@@ -282,27 +261,28 @@ const TripsUniDetails = () => {
               justifyContent="center"
               alignItems="center"
             >
-              <Typography
-                variant="subtitle"
-                className={classes.Typography}
-                style={{
-                  // marginRight: "5px",
-                  color: "#5151ff",
-                  fontWeight: "bold",
-                }}
-              >
-                اسم السائق:
+            
                 <Typography
+                 
+                  variant="subtitle"
                   className={classes.Typography}
                   style={{
-                    fontSize: "20px",
-                    color: "#000000",
+                    // marginRight: "5px",
+                    color: "#5151ff",
                     fontWeight: "bold",
                   }}
                 >
-                  {trip?.driver?.name}{" "}
+                  
+                 اسم السائق:
+                 <Typography  className={classes.Typography}
+                  style={{
+                    fontSize:"20px",
+                    color: "#000000",
+                    fontWeight: "bold",
+                  }}>
+                 {trip?.driver?.name} </Typography>
                 </Typography>
-              </Typography>
+          
             </Grid>
             <Grid
               item
@@ -880,7 +860,7 @@ const TripsUniDetails = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {trip.trips[0].total_seats}
+                    {trip.trips[0]?.total_seats}
                   </span>
                 </Typography>
               </Grid>
@@ -911,13 +891,13 @@ const TripsUniDetails = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {trip.trips[0].available_seats}
+                    {trip.trips[0]?.available_seats}
                   </span>
                 </Typography>
               </Grid>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} >
               <Table>
                 {trip.subscriptions?.length > 0 && (
                   <TableHead
@@ -944,7 +924,7 @@ const TripsUniDetails = () => {
                     </TableRow>
                   </TableHead>
                 )}
-                <TableBody>
+                <TableBody >
                   {[...trip.subscriptions].map((item, index) => (
                     <TableRow
                       key={item.id}
@@ -1051,9 +1031,7 @@ const TripsUniDetails = () => {
                             key={`${tripIndex}-${reservationIndex}`}
                             sx={{
                               backgroundColor:
-                                reservationIndex % 2 === 0
-                                  ? "background.paper"
-                                  : "#EBE6E4",
+                                reservationIndex % 2 === 0 ? "background.paper" : "#EBE6E4",
                               "& .MuiTableCell-root": {
                                 width: `${100 / gridHeaders.length}%`,
                                 textAlign: "center",
@@ -1158,25 +1136,9 @@ const TripsUniDetails = () => {
           </Grid>
         </Paper>
       </Grid>
-      <Dialog
-        open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
-      >
-        <DialogTitle>تأكيد الحذف</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            هل أنت متأكد أنك تريد حذف هذه الرحلة ؟
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>إلغاء</Button>
-          <Button onClick={handleConfirmDelete} color="primary">
-            حذف
-          </Button>
-        </DialogActions>
-      </Dialog>
+     
     </div>
   );
 };
 
-export default TripsUniDetails;
+export default TripsArchUniDetails;

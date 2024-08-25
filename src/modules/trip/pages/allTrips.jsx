@@ -9,10 +9,10 @@ import {
   DialogContent,
   DialogActions,
   Box,
-  modal,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import ButtonBase from "@mui/material/ButtonBase";
 import AddDestinationModal from "../../../Component/AddDestination";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import * as Yup from "yup";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Paper from "@mui/material/Paper";
@@ -34,21 +34,30 @@ import Alert from "@mui/material/Alert";
 import {
   getTrips,
   addTrip,
-  addDestination,
   endTrip,
-  searchDestination,
   fetchBus,
   fetchDestinations,
   fetchDriver,
 } from "../../../api/TripsApi";
 import { Autocomplete } from "@mui/material";
 import dayjs from "dayjs";
+import { useParams } from "react-router-dom";
+import { _axios } from "../../../api/axiosApi";
 
 const useStyles = makeStyles((theme) => ({
   Typography: {
     color: "#000000",
     fontFamily: "Cairo",
     fontSize: "18px",
+  },
+}));
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
   },
 }));
 
@@ -82,6 +91,8 @@ const validationSchema = Yup.object().shape({
 });
 const AllTrips = () => {
   const classes = useStyles();
+  const { trip_id } = useParams();
+
   const [driverOptions, setDriverOptions] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -95,11 +106,12 @@ const AllTrips = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isTripAdded, setTripAdded] = useState(false);
-  const[TripEnd,setTripEnd]=useState(false);
+  const [TripEnd, setTripEnd] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const queryClient = useQueryClient();
-
-  const [validationErrors, setValidationErrors] = useState({});
 
   const [newTrip, setNewTrip] = useState({
     trip_number: "",
@@ -139,7 +151,7 @@ const AllTrips = () => {
     onSuccess: (data) => {
       console.log("end Trip success:", data);
       queryClient.invalidateQueries("trips");
-      setTripEnd(true)
+      setTripEnd(true);
     },
   });
 
@@ -193,23 +205,29 @@ const AllTrips = () => {
       return addedTrip;
     } catch (error) {
       if (error.name === "ValidationError") {
+        // Handle validation errors
         const validationErrors = error.inner.reduce((acc, curr) => {
           acc[curr.path] = curr.message;
           return acc;
         }, {});
         setValidationErrors(validationErrors);
         setBackendErrors({});
-      } else if (typeof error === "object" && error !== null) {
-        // Assume this is the backend error object
-        const backendErrorsArray = Object.entries(error.response.data).map(
-          ([field, message]) => ({
-            field,
-            message,
-          })
-        );
+      } else if (error.response && error.response.data) {
+        // Handle backend errors
+        let backendErrorsArray = [];
+        if (typeof error.response.data === 'object' && error.response.data !== null) {
+          backendErrorsArray = Object.entries(error.response.data).map(
+            ([field, message]) => ({
+              field,
+              message,
+            })
+          );
+        } else {
+          backendErrorsArray = [{ field: 'general', message: error.response.data }];
+        }
         setBackendErrors(backendErrorsArray);
         setValidationErrors({}); // Clear validation errors
-
+    
         // Set the Snackbar state
         const errorMessages = backendErrorsArray
           .map(({ message }) => message)
@@ -217,8 +235,8 @@ const AllTrips = () => {
         setSnackbarMessage(errorMessages);
         setSnackbarOpen(true);
       } else {
+        // Handle other types of errors
         console.error("Error adding driver:", error);
-        // Handle other types of errors as needed
       }
     }
   };
@@ -231,6 +249,15 @@ const AllTrips = () => {
       console.error("Error ending trip:", error);
       // Handle the error, e.g., display an error message
     }
+  };
+
+  const handleClickOpen = (trip) => {
+    setSelectedTrip(trip);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   const { data: destinations } = useQuery("destinations", fetchDestinations);
@@ -305,13 +332,6 @@ const AllTrips = () => {
     console.log("fetchTrips.data.trips is not an array");
   }
 
-  //   const uniqueDestination = Array.from(
-  //     new Map(
-  //       fetchDestinations?.data?.map((dest) => [dest?.name, dest])
-  //     ).values()
-  //   );
-
-  // console.log(uniqueDestination)
   const busMapping = {};
   if (buses) {
     buses.forEach((bus) => {
@@ -402,7 +422,7 @@ const AllTrips = () => {
                   }}
                 ></div>
               </Grid>
-              <Grid container spacing={2}>
+              <Grid container>
                 <Grid item xs={4} container direction="row" alignItems="center">
                   <Typography variant="subtitle" className={classes.Typography}>
                     {trip.starting_place}
@@ -508,6 +528,24 @@ const AllTrips = () => {
                       border: "1px solid #EBE6E4",
                       borderRadius: "4px",
                     }}
+                    onClick={() => handleClickOpen(trip)}
+                  >
+                    <Typography
+                      className={classes.Typography}
+                      style={{ fontSize: "20px", fontWeight: "bold" }}
+                    >
+                      الأمانات
+                    </Typography>
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: "#EBE6E4",
+                      border: "1px solid #EBE6E4",
+                      borderRadius: "4px",
+                    }}
                     onClick={() => handleEndTrip(trip.id)}
                   >
                     <Typography
@@ -575,11 +613,11 @@ const AllTrips = () => {
         </Button>
 
         <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-          <DialogTitle>رحلة جديدة</DialogTitle>
+          <DialogTitle style={{fontWeight:'bold'}} sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title" >رحلة جديدة</DialogTitle>
           <form onSubmit={handleAddTrip} autoComplete="off">
-            <DialogContent>
+            <DialogContent dividers>
               <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     label="مكان الانطلاق"
                     value={newTrip.starting_place}
@@ -606,7 +644,6 @@ const AllTrips = () => {
                     helperText={validationErrors.trip_number}
                   />
                 </Grid>
-              
               </Grid>
 
               <div
@@ -699,8 +736,6 @@ const AllTrips = () => {
                   setDestination([...destinations, newDestination]);
                   handleSaveDestination(newDestination);
                 }}
-                destinations={destinations}
-                setDestinations={setDestination}
               />
               <Autocomplete
                 options={buses}
@@ -715,7 +750,7 @@ const AllTrips = () => {
                 renderOption={(props, option) => (
                   <Box {...props} display="flex" alignItems="center">
                     <img
-                      src={`http://91.144.20.117:7109${option.image}`}
+                      src={`http://161.35.27.202${option.image}`}
                       alt={option.bus_number.toString()}
                       style={{ width: "50px", marginRight: "16px" }}
                     />
@@ -778,8 +813,8 @@ const AllTrips = () => {
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
-              <Button type="submit" color="primary">
+              <Button  variant="contained"  style={{ marginRight: "10px" }} onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
+              <Button variant="contained" type="submit" color="primary">
                 إضافة رحلة{" "}
               </Button>
             </DialogActions>
@@ -802,46 +837,234 @@ const AllTrips = () => {
           </Alert>
         </Snackbar>
         {isTripAdded && (
-        <Snackbar
-          open={isTripAdded}
-          autoHideDuration={6000}
-          onClose={() => setTripAdded(false)}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-        >
-          <Alert
+          <Snackbar
+            open={isTripAdded}
+            autoHideDuration={6000}
             onClose={() => setTripAdded(false)}
-            severity="success"
-            variant="filled"
-            sx={{ width: "100%" }}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
           >
-            A Trip Added successfully
-          </Alert>
-        </Snackbar>
-      )}
-      {TripEnd && (
-        <Snackbar
-          open={TripEnd}
-          autoHideDuration={6000}
-          onClose={() => setTripEnd(false)}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-        >
-          <Alert
+            <Alert
+              onClose={() => setTripAdded(false)}
+              severity="success"
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+             تم إضافة رحلة جديدة
+            </Alert>
+          </Snackbar>
+        )}
+        {TripEnd && (
+          <Snackbar
+            open={TripEnd}
+            autoHideDuration={6000}
             onClose={() => setTripEnd(false)}
-            severity="success"
-            variant="filled"
-            sx={{ width: "100%" }}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
           >
-            A Trip moved to Archive successfully
-          </Alert>
-        </Snackbar>
-      )}
+            <Alert
+              onClose={() => setTripEnd(false)}
+              severity="success"
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              انتقلت الرحلة إلى الأرشيف
+            </Alert>
+          </Snackbar>
+        )}
         {content}
+
+        <div>
+          <BootstrapDialog
+            onClose={handleClose}
+            aria-labelledby="customized-dialog-title"
+            open={open}
+          >
+            <DialogTitle
+              sx={{ m: 0, p: 2, textAlign: "center" }}
+              id="customized-dialog-title"
+            >
+              الأمانات
+            </DialogTitle>
+            <DialogContent dividers>
+              {selectedTrip?.envelops?.length > 0 ? (
+                selectedTrip.envelops.map((envelop, index) => (
+                  <div style={{ marginBottom: "20px" }} key={index}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        width: "500px!important",
+                        minHeight: "100px",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignContent: "center",
+                      }}
+                    >
+                      <Grid container spacing={3}>
+                        <Grid
+                          item
+                          xs={4}
+                          container
+                          direction="column"
+                          justifyContent="center"
+                        >
+                          <div>
+                            <Typography
+                              variant="body2"
+                              gutterBottom
+                              style={{
+                                fontWeight: "bold",
+                                color: "black",
+                                fontFamily: "Cairo",
+                                fontSize: 15,
+                              }}
+                            >
+                              <span style={{ color: "#F01E29" }}>
+                                اسم المُستقبل:{" "}
+                              </span>
+                              {envelop.receiver_name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              style={{
+                                fontWeight: "bold",
+                                color: "black",
+                                fontFamily: "Cairo",
+                                fontSize: 15,
+                              }}
+                            >
+                              <span style={{ color: "#F01E29" }}>
+                                رقم المُستقبل:{" "}
+                              </span>
+                              {envelop.receiver_phone}
+                            </Typography>
+                          </div>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={4}
+                          container
+                          direction="column"
+                          justifyContent="center"
+                        >
+                          <div>
+                            <Typography
+                              variant="body2"
+                              gutterBottom
+                              style={{
+                                fontWeight: "bold",
+                                color: "black",
+                                fontFamily: "Cairo",
+                                fontSize: 15,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: "#F01E29",
+                                  marginRight: "30px",
+                                }}
+                              >
+                                اسم المُرسل:{" "}
+                              </span>
+                              {envelop.user.name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              style={{
+                                fontWeight: "bold",
+                                color: "black",
+                                fontFamily: "Cairo",
+                                fontSize: 15,
+                              }}
+                            >
+                              <span style={{ color: "#F01E29" }}>
+                                رقم المُرسل:{" "}
+                              </span>
+                              {envelop.user.mobile_number}
+                            </Typography>
+                          </div>
+                        </Grid>
+
+                        <Grid item xs={4}>
+                          <ButtonBase sx={{ width: "120", height: "160" }}>
+                            <img
+                              src={`http://161.35.27.202${envelop.image}`}
+                              alt={`Envelop ${index + 1}`}
+                              style={{ width: "80%" }}
+                            />
+                          </ButtonBase>
+                        </Grid>
+                      </Grid>
+                      <Grid container spacing={2}>
+                        <Grid
+                          item
+                          xs={12}
+                          container
+                          textAlign="center"
+                          direction="column"
+                          justifyContent="center"
+                        >
+                          <div>
+                            <Typography
+                              gutterBottom
+                              variant="subtitle1"
+                              component="div"
+                              style={{
+                                fontWeight: "bold",
+                                color: "black",
+                                fontFamily: "Cairo",
+                                fontSize: 15,
+                              }}
+                            >
+                              <span style={{ color: "#F01E29" }}>الوصف: </span>
+                              {envelop.description}
+                            </Typography>
+                          </div>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </div>
+                ))
+              ) : (
+                <div style={{ marginBottom: "20px" }}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      width: "500px!important",
+                      minHeight: "100px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      gutterBottom
+                      style={{
+                        fontWeight: "bold",
+                        color: "black",
+                        fontFamily: "Cairo",
+                        fontSize: 15,
+                      }}
+                    >
+                      لايوجد أمانات لهذه الرحلة
+                    </Typography>
+                  </Paper>
+                </div>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={handleClose}>
+                إغلاق
+              </Button>
+            </DialogActions>
+          </BootstrapDialog>
+        </div>
       </div>
     </div>
   );

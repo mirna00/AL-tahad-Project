@@ -9,6 +9,7 @@ import ArchiveTrips from "./pages/ArchiveTrips";
 import TripsDetails from "./pages/tripsDetails";
 import DetailsArchive from "./pages/DetailsArchive";
 
+
 const TravelRouting = () => {
   const can = useAbility();
 

@@ -9,7 +9,7 @@ export const getDriver = async () => {
 };
 export const searchDriver = async (searchQuery) => {
   const response = await fetch(
-    `http://91.144.20.117:7109/api/driver/searchDriver`,
+    `http://161.35.27.202/api/driver/searchDriver`,
     {
       method: "POST",
       headers: {

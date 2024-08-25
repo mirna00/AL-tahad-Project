@@ -25,7 +25,7 @@ const AppRouting = () => {
       <Routes>
         <>
           <Route
-            path="/login"
+            path="/"
             element={
               <UnProtectedRoute>
                 <Login />

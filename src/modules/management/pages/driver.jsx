@@ -27,15 +27,14 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import {
   getDriver,
   addDriver,
-  updateDriver,
+
   deleteDriver,
-  searchDriver,
 } from "../../../api/DriverApi";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import DriverEditModal from "./DriverEdit";
 
-// const passwordRules = /^(?=.*[A-Z]).{5,}$/;
+
 
 const validationSchema = yup.object().shape({
   name: yup
@@ -86,7 +85,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Drivers = () => {
   const classes = useStyles();
-  const gridHeaders = ["الاسم", "العمر", "الرقم", "العنوان", "Email", " "];
+  const gridHeaders = ["الاسم", "العمر", "الرقم", "العنوان", "البريد الإلكتروني", " "];
   const [newDriver, setNewDriver] = useState({
     name: "",
     age: "",
@@ -101,7 +100,6 @@ const Drivers = () => {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  const [filteredDrivers, setFilteredDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [isDriverAdded, setIsDriverAdded] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -141,11 +139,11 @@ const Drivers = () => {
       fetchdrivers?.data?.drivers.map((driver) => [driver?.name, driver])
     ).values()
   );
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
     setSnackbarMessage("");
   };
+
 
   const handleAddDriver = async (e) => {
     e.preventDefault();
@@ -320,7 +318,7 @@ const Drivers = () => {
                         {driver.address}
                       </Typography>
                     )}
-                    {header === "Email" && (
+                    {header === "البريد الإلكتروني" && (
                       <Typography
                         variant="subtitle"
                         className={classes.Typography}
@@ -403,9 +401,9 @@ const Drivers = () => {
       </Button>
 
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-        <DialogTitle>إنشاء حساب سائق جديد</DialogTitle>
+        <DialogTitle style={{fontWeight:'bold'}} sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">إنشاء حساب سائق جديد</DialogTitle>
         <form onSubmit={handleAddDriver} autoComplete="off">
-          <DialogContent>
+          <DialogContent dividers >
             <TextField
               label="الاسم"
               type="text"
@@ -462,7 +460,7 @@ const Drivers = () => {
               helperText={validationErrors.address}
             />
             <TextField
-              label="Email"
+              label="البريد الإلكتروني"
               type="email"
               value={newDriver.email}
               onChange={(e) =>
@@ -488,8 +486,9 @@ const Drivers = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
-            <Button type="submit" color="primary">
+            
+            <Button variant="contained"  style={{ marginRight: "10px" }} onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
+            <Button variant="contained" type="submit" color="primary">
               إضافة السائق
             </Button>
           </DialogActions>
@@ -500,7 +499,7 @@ const Drivers = () => {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
       >
-        <DialogTitle>تأكيد الحذف</DialogTitle>
+        <DialogTitle  sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">تأكيد الحذف</DialogTitle>
         <DialogContent>
           <DialogContentText>
             هل أنت متأكد أنك تريد حذف هذا السائق؟
@@ -529,7 +528,7 @@ const Drivers = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Driver deleted successfully
+           تم حذف السائق بنجاح
           </Alert>
         </Snackbar>
       )}
@@ -565,7 +564,7 @@ const Drivers = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Driver Added successfully
+            تم إضافة سائق جديد
           </Alert>
         </Snackbar>
       )}
@@ -574,6 +573,7 @@ const Drivers = () => {
         onClose={handleCloseEditModal}
         driver={selectedDriver}
       />
+      
       {content}
     </div>
   );

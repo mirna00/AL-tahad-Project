@@ -6,6 +6,7 @@ import AllUni from "./Pages/uniTrips";
 import ArchiveUni from "./Pages/ArchiveUni";
 import Subscribe from "./Pages/Subscribe";
 import TripsUniDetails from "./Pages/TripsUniDetails";
+import TripsArchUniDetails from "./Pages/TripsArchUniDetails";
 
 const UniversityRoutes = () => {
   const can = useAbility();
@@ -20,6 +21,8 @@ const UniversityRoutes = () => {
           <Route path="/uni_trips/:id" element={<TripsUniDetails />} />
 
           <Route path="/طلبات_الاشتراك" element={<Subscribe />} />
+          <Route path="/arch_trip/:id" element={<TripsArchUniDetails />} />
+
 
           <Route path="/أرشيف_الجامعات" element={<ArchiveUni />} />
         </Route>

@@ -1,47 +1,27 @@
 import React, { useState } from "react";
 import { useMutation } from "react-query";
 import { TextField, Modal, Box, Button } from "@mui/material";
+import { _axios } from "../api/axiosApi";
+import { addDestination,fetchDestinations } from "../api/TripsApi";
+import { useQueryClient ,useQuery } from "react-query";
 
-export const AddDestinationModal = ({ open, onClose, onSave ,destinations,setDestinations }) => {
+export const AddDestinationModal = ({ open, onClose, onSave }) => {
   const [newDestination, setNewDestination] = useState("");
+  const queryClient = useQueryClient();
 
-  const { mutate: addDestination, isLoading } = useMutation(
-    async (newDestinationName) => {
-      const response = await fetch(
-        "http://91.144.20.117:7109/api/destination/add_destination",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: newDestinationName }),
-        }
-      );
+  const { data: destinations } = useQuery("destinations", fetchDestinations);
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      return data;
+  const { mutate: addDestinationMutate, isLoading } = useMutation(addDestination, {
+    onSuccess: (data) => {
+      console.log("Add Trip success:", data);
+      queryClient.invalidateQueries("destinations");
+      onSave(data.destination);
+      onClose();
     },
-    {
-      onSuccess: (data) => {
-        // Update the destinations array with the new destination
-        onSave(data);
-        setNewDestination("");
-        onClose();
-      },
-      onError: (error) => {
-        console.error("Error adding destination:", error);
-      },
-    }
-  );
+  });
 
   const handleSave = () => {
-    addDestination(newDestination);
-    onSave(newDestination);
-    onClose();
+    addDestinationMutate(newDestination);
   };
 
   return (
@@ -86,12 +66,12 @@ export const AddDestinationModal = ({ open, onClose, onSave ,destinations,setDes
         <Button
           variant="contained"
           color="primary"
-          onClick={handleSave}
+          onClick={onClose}
           sx={{
             color: "common.white",
           }}
         >
-          cancel
+          Cancel
         </Button>
       </Box>
     </Modal>

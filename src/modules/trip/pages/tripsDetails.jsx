@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useQueryClient } from "react-query";
 import Autocomplete from "@mui/material/Autocomplete";
 import * as yup from "yup";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Link, useNavigate } from "react-router-dom";
-import {
+import DownloadIcon from '@mui/icons-material/Download';import {
   Grid,
   Paper,
   Typography,
@@ -43,7 +45,6 @@ import {
 import PassengerEdit from "./PassengerEdit";
 import EditIcon from "@mui/icons-material/Edit";
 
-
 const useStyles = makeStyles((theme) => ({
   paper: {
     padding: theme.spacing(2),
@@ -54,6 +55,7 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Cairo",
     fontSize: "20px",
     marginBottom: theme.spacing(1),
+    letterSpacing: "normal !important",
   },
   Typography: {
     color: "#000000",
@@ -96,9 +98,10 @@ const TripsDetails = () => {
   const { id } = useParams();
   const classes = useStyles();
   const navigate = useNavigate();
+  const contentRef = useRef(null);
+  const excludedRef = useRef(null);
 
-  const [date, setDate] = useState(null);
-  const [arrivalTime, setArrivalTime] = useState(null);
+  // Arabic font data (replace with your actual font file)
 
   const gridHeaders = [
     "الاسم",
@@ -118,7 +121,7 @@ const TripsDetails = () => {
     nationality: "",
     seat_number: "",
     trip_id: id, // Add trip_id to newPassenger state
-    user_id: "100",
+    user_id: "4",
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -129,7 +132,7 @@ const TripsDetails = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isPassengerAdded, setIsPassengerAdded] = useState(false);
- 
+
   const queryClient = useQueryClient();
 
   const {
@@ -139,7 +142,7 @@ const TripsDetails = () => {
     data: tripsDetails,
   } = useQuery(["trips", id], () => fetchTripsDetails(id));
 
-  const addPassengerMutation = useMutation(addPassenger,{
+  const addPassengerMutation = useMutation(addPassenger, {
     onSuccess: (data) => {
       console.log("Add driver success:", data);
       queryClient.invalidateQueries("passengers");
@@ -166,7 +169,7 @@ const TripsDetails = () => {
         address: "",
         nationality: "",
         seat_number: "",
-        user_id: "100",
+        user_id: "4",
         trip_id: id,
       });
       setValidationErrors({});
@@ -182,12 +185,12 @@ const TripsDetails = () => {
         setBackendErrors({});
       } else if (typeof error === "object" && error !== null) {
         // Assume this is the backend error object
-        const backendErrorsArray = Object.entries(error.response.data.errors).map(
-          ([field, message]) => ({
-            field,
-            message,
-          })
-        );
+        const backendErrorsArray = Object.entries(
+          error.response.data.errors
+        ).map(([field, message]) => ({
+          field,
+          message,
+        }));
         setBackendErrors(backendErrorsArray);
         setValidationErrors({}); // Clear validation errors
 
@@ -214,12 +217,57 @@ const TripsDetails = () => {
     setSelectedPassenger(null);
   };
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    if (contentRef.current) {
+      try {
+        const canvas = await html2canvas(contentRef.current, {
+          onclone: (clonedDocument) => {
+            // Remove the edit icon buttons from the cloned document
+            const editButtons = clonedDocument.querySelectorAll(
+              'button[aria-label="Edit"]'
+            );
+
+            editButtons.forEach((button) => button.remove());
+            // Remove the "إضافة شخص جديد" button
+            const addButton = clonedDocument.querySelector(
+              'button[aria-label="add"]'
+            );
+            if (addButton) {
+              addButton.remove();
+            }
+
+            // Remove the "Export to PDF" button
+            const exportButton = clonedDocument.querySelector(
+              'button[aria-label="download"]'
+            );
+            if (exportButton) {
+              exportButton.remove();
+            }
+          },
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", [297, 210]); // A4 size, portrait orientation
+
+        // Add the content to the PDF
+        pdf.addImage(imgData, "JPEG", 10, 10, 190, 0); // Adjust the position and size as needed
+
+        pdf.save("download.pdf");
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+      } finally {
+        setIsDownloading(false);
+      }
+    }
+  };
   const deleteTripMutate = useMutation(deleteTrip, {
     onSuccess: () => {
       queryClient.invalidateQueries("trips");
-      setDeleteSuccess('Trip deleted successfully');
+      setDeleteSuccess("Trip deleted successfully");
       navigate("/dashboard/السفر/الرحلات"); // Navigate to the new page
-     
     },
     onError: (error) => {
       console.error("Error deleting trip:", error);
@@ -358,7 +406,7 @@ const TripsDetails = () => {
             alignContent: "center",
           }}
         >
-          <Grid item container direction="row">
+          <Grid ref={contentRef} item container direction="row">
             <Grid item xs={2} container direction="column" alignItems="center">
               <Typography
                 variant="subtitle"
@@ -389,11 +437,6 @@ const TripsDetails = () => {
                     alignItems: "center",
                   }}
                 >
-                  <div style={{ marginRight: "8px" }}>
-                    {/* <ConfirmationNumberRoundedIcon
-                      style={{ color: "#F01E29", margin: "3px" }}
-                    /> */}
-                  </div>
                   رقم الرحلة
                 </div>
                 <div style={{ display: "flex", justifyContent: "center" }}>
@@ -413,11 +456,6 @@ const TripsDetails = () => {
                     alignItems: "center",
                   }}
                 >
-                  <div style={{ marginRight: "8px" }}>
-                    {/* <DirectionsBusRoundedIcon
-                      style={{ color: "#F01E29", margin: "3px",fontSize:"24px" }}
-                    /> */}
-                  </div>
                   رقم الباص
                 </div>
                 <div style={{ display: "flex", justifyContent: "center" }}>
@@ -520,12 +558,13 @@ const TripsDetails = () => {
                 </Typography>
               </Grid>
             </Grid>
+
             <Grid
               container
               justifyContent="flex-end"
               style={{ marginBottom: "16px" }}
             >
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Button
                   style={{
                     color: "#F01E29",
@@ -534,6 +573,7 @@ const TripsDetails = () => {
                     background: "none",
                     cursor: "pointer",
                   }}
+                  aria-label="add"
                   onClick={() => setOpenAddDialog(true)}
                 >
                   <Typography
@@ -546,14 +586,21 @@ const TripsDetails = () => {
                   </Typography>
                 </Button>
               </Grid>
+
+              <Grid item xs={6}>
+                {" "}
+                <IconButton aria-label="download" onClick={handleDownloadPDF}>
+                  <DownloadIcon/>
+                </IconButton>
+            
+              </Grid>
               <Dialog
                 open={openAddDialog}
                 onClose={() => setOpenAddDialog(false)}
-                
               >
-                <DialogTitle>إنشاء مسافر جديد</DialogTitle>
+                <DialogTitle  style={{fontWeight:'bold'}} sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">إنشاء مسافر جديد</DialogTitle>
                 <form onSubmit={handleAddPassenger} autoComplete="off">
-                  <DialogContent>
+                  <DialogContent dividers>
                     <TextField
                       label="الاسم"
                       value={newPassenger.name}
@@ -652,23 +699,27 @@ const TripsDetails = () => {
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={() => setOpenAddDialog(false)}>
+                    <Button variant="contained" onClick={() => setOpenAddDialog(false)}>
                       إلغاء
                     </Button>
-                    <Button type="submit" color="primary">
+                    <Button variant="contained"  style={{marginLeft:'15px'}} type="submit" color="primary">
                       إضافة مسافر
                     </Button>
                   </DialogActions>
                 </form>
               </Dialog>
             </Grid>
+
+            {/* Table */}
             <Grid item xs={12}>
-              <Table>
+              <Table ref={contentRef}>
                 {orders?.length > 0 && (
                   <TableHead
                     sx={{
                       backgroundColor: "#EBE6E4",
                       "& .MuiTableCell-head": {
+                        letterSpacing: "normal !important",
+
                         fontWeight: "600",
                         fontSize: "22px",
                         color: "#F01E29",
@@ -681,7 +732,10 @@ const TripsDetails = () => {
                       {gridHeaders?.map((header, headerIndex) => (
                         <TableCell
                           key={headerIndex}
-                          sx={{ width: `${100 / (gridHeaders.length + 1)}%` }}
+                          sx={{
+                            width: `${100 / (gridHeaders.length + 1)}%`,
+                            letterSpacing: "normal !important",
+                          }}
                         >
                           {header}
                         </TableCell>
@@ -694,6 +748,8 @@ const TripsDetails = () => {
                     <TableRow
                       key={order.id}
                       sx={{
+                        letterSpacing: "normal !important",
+
                         backgroundColor:
                           index % 2 === 0 ? "background.paper" : "#EBE6E4",
                         "& .MuiTableCell-root": {
@@ -708,6 +764,7 @@ const TripsDetails = () => {
                             <Typography
                               variant="subtitle"
                               className={classes.Typography}
+                              sx={{ letterSpacing: "normal !important" }}
                             >
                               {order.name}
                             </Typography>
@@ -732,6 +789,7 @@ const TripsDetails = () => {
                             <Typography
                               variant="subtitle"
                               className={classes.Typography}
+                              sx={{ letterSpacing: "normal !important" }}
                             >
                               {order.address}
                             </Typography>
@@ -740,6 +798,7 @@ const TripsDetails = () => {
                             <Typography
                               variant="subtitle"
                               className={classes.Typography}
+                              sx={{ letterSpacing: "normal !important" }}
                             >
                               {order.nationality}
                             </Typography>
@@ -752,13 +811,16 @@ const TripsDetails = () => {
                               {order.seat_number}
                             </Typography>
                           )}
-                          {header === " " && (
-                            <IconButton
-                              onClick={() => handleUpdatePassenger(order)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          )}
+                          <div ref={excludedRef}>
+                            {header === " " && (
+                              <IconButton
+                                aria-label="Edit"
+                                onClick={() => handleUpdatePassenger(order)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            )}
+                          </div>
                         </TableCell>
                       ))}
                     </TableRow>
@@ -791,7 +853,7 @@ const TripsDetails = () => {
         onClose={handleCloseEditModal}
         order={selectedPassenger}
       />
- {isPassengerAdded && (
+      {isPassengerAdded && (
         <Snackbar
           open={isPassengerAdded}
           autoHideDuration={6000}
@@ -807,13 +869,12 @@ const TripsDetails = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            passenger Added successfully
+           تم إضافة المٌسافر بنجاح
           </Alert>
         </Snackbar>
-        
       )}
 
-<Snackbar
+      <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}

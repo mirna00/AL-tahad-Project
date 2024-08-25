@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
 
 const LeftSidebar = ({ handleSidebarItemClick }) => {
   const classes = useStyles();
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState('الإدارة');
   const roleMenus = {
     الإدارة: { icon: <HomeIcon /> },
     السفر: { icon: <FlightIcon /> },

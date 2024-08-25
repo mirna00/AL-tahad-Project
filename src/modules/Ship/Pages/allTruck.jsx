@@ -15,6 +15,7 @@ import {
   Box,
 } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Alert from "@mui/material/Alert";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import * as Yup from "yup";
@@ -214,29 +215,28 @@ const Trucks = () => {
                     </div>
                   </Grid>
                   <Grid item>
-                    <Typography
+                  <IconButton
                       sx={{ cursor: "pointer" }}
-                      variant="body2"
                       onClick={() => handleDeleteBus(truck)}
                     >
-                      Remove
-                    </Typography>
+                      <DeleteIcon />
+                    </IconButton>
                   </Grid>
                 </Grid>
               </Paper>
             </div>
           ))
         ) : (
-          <Typography variant="body2">No trucks found.</Typography>
+          <Typography variant="body2">لا يوجد شاحنات</Typography>
         )}
       </div>
 
       {/* for add bus */}
       <Button onClick={() => setOpenAddDialog(true)}>إضافة شاحنة</Button>
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-        <DialogTitle>إضافة شاحنة جديدة</DialogTitle>
+        <DialogTitle  style={{fontWeight:'bold'}} sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">إضافة شاحنة جديدة</DialogTitle>
         <form onSubmit={handleAddTrip} autoComplete="off">
-          <DialogContent>
+          <DialogContent dividers>
             <TextField
               label="الشاحنة"
               type="number"
@@ -263,8 +263,8 @@ const Trucks = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
-            <Button type="submit" color="primary">
+            <Button  variant="contained" style={{marginLeft:'16px'}} onClick={() => setOpenAddDialog(false)}>إلغاء</Button>
+            <Button  variant="contained" style={{marginLeft:'16px'}} type="submit" color="primary">
               إضافة الشاحنة
             </Button>
           </DialogActions>
@@ -282,7 +282,7 @@ const Trucks = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>إلغاء</Button>
+          <Button  onClick={() => setOpenDeleteDialog(false)}>إلغاء</Button>
           <Button color="error" onClick={confirmDelete}>
             حذف
           </Button>
@@ -304,7 +304,7 @@ const Trucks = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Truck deleted successfully
+            تم حذف الشاحنة
           </Alert>
         </Snackbar>
       )}
@@ -340,7 +340,7 @@ const Trucks = () => {
             variant="filled"
             sx={{ width: "100%" }}
           >
-            Truck Added successfully
+            تم إضافة الشاحنة
           </Alert>
         </Snackbar>
       )}

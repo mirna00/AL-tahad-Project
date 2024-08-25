@@ -1,0 +1,18 @@
+
+  .recharts-wrapper bar-chart{
+        /* text-align: center; */
+        position: relative;
+        cursor: default;
+        /* width: 600px; */
+        height: 300px;
+  }
+  .chart-container {
+  
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .bar-chart {
+    margin-top: 20px;
+  }

@@ -1,9 +1,13 @@
 import React from "react";
-import { Paper, Grid, Typography} from "@mui/material";
+import { Paper, Grid, Typography,Icon,Box} from "@mui/material";
 import { makeStyles } from "@material-ui/core";
-import Carousel from "react-material-ui-carousel";
-import { useQuery,useQueryClient } from "react-query";
-import { getUser ,getComplaint } from "../../../api/UserApi"; 
+import { useQuery } from "react-query";
+import { getComplaint } from "../../../api/UserApi"; 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/swiper-bundle.css';
+import { Navigation, Pagination } from 'swiper/modules';
+// import { ErrorOutlineRounded } from '@material-ui/icons';
+import GppBadIcon from '@mui/icons-material/GppBad';
 
 
 
@@ -15,166 +19,84 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "18px",
   },
 
-  paperContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    margin: "0 20px",
-    width: "100%",
-  },
-  paper: {
-    p: 6,
-    width: "500px",
-    minHeight: "600px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
  
 }));
 
 const Complaint = () => {
   const classes = useStyles();
-  const queryClient = useQueryClient();
+  const { data: complaints, error, isLoading } = useQuery("complaints", getComplaint);
 
-  const {
-    data: complaints,
-  } = useQuery("complaints",getComplaint);
-  const {
-    data: usersData,
-  } = useQuery("users",getUser);
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
-  const complaint = complaints?.data;
-  const userMap = new Map();
-  if (usersData?.data?.users) {
-    for (const user of usersData.data.users) {
-      userMap.set(user.id, { name: user.name, mobile_number: user.mobile_number });
-    }
-  }
+  
+ 
+console.log(complaints)
   return (
-    <div  >
-      <Carousel
-        animation="slide"
-        interval={null}
-        navButtonsAlwaysVisible
-        navButtonsProps={{
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            color: "white",
-            borderRadius: 0,
-            "&:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.8)",
-            },
-            // position: "absolute",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 1,
-            left: "15px", // Adjust this value to position the buttons
-            right: "15px", // Adjust this value to position the buttons
-          },
-        }}
-      >
-       {complaint?.map((com, index) => (
-          <div key={index} className={classes.paperContainer}>
-            <Paper className={classes.paper}>
-              <Grid
-                container
-                spacing={2}
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Grid
-                  item
-                  xs={12}
-                  container
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Typography
-                    variant="subtitle"
-                    className={classes.Typography}
-                    style={{
-                      fontWeight: "bold",
-                      color: "#F01E29",
-                    }}
-                  >
-                    {`مشكلة ${index + 1}`}
-                  </Typography>
-                </Grid>
-                <Grid
-                  item
-                  xs={12}
-                  container
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Typography variant="subtitle" className={classes.Typography}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        color: "#5151ff",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      الاسم:
-                    </div>
-                    {userMap.get(com.user_id)?.name || "Unknown"}
-                  </Typography>
-                </Grid>
-                <Grid
-                  item
-                  xs={12}
-                  container
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Typography variant="subtitle" className={classes.Typography}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        color: "#5151ff",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      الرقم :
-                    </div>
-                    {userMap.get(com.user_id)?.mobile_number || "Unknown"}
-                  </Typography>
-                </Grid>
-                <Grid
-                  item
-                  xs={12}
-                  container
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Typography variant="subtitle" className={classes.Typography}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        color: "#5151ff",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      وصف المشكلة
-                    </div>
-                    {com.content}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Paper>
-          </div>
-        ))}
-      </Carousel>
-    </div>
+    <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    height="100vh"
+  >
+    <Swiper
+      spaceBetween={30}
+      slidesPerView={1}
+      navigation
+      pagination={{ clickable: true }}
+      modules={[Navigation, Pagination]}
+      style={{ width: '90%', maxWidth: '600px' }}
+    >
+      {complaints.data.map((complaint) => (
+        <SwiperSlide key={complaint.id}>
+          <Box
+            p={2}
+            bgcolor="#fff"
+            borderRadius={10}
+            boxShadow="0 4px 8px rgba(0, 0, 0, 0.1)"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            height="300px"
+          >
+            <Box
+              position="relative"
+              width="100%"
+              marginBottom={6}
+            >
+              <Icon
+                component={GppBadIcon}
+                style={{
+                  color: 'red',
+                  fontSize: '80px',
+                  position: 'absolute',
+                 
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                }}
+              />
+           
+            </Box>
+            <Box marginTop={8}>
+                <Typography variant="h4" align="center" gutterBottom>
+                  {complaint.user.name}
+                </Typography>
+              </Box>
+            <Typography variant="body1" color="textSecondary" align="center" style={{fontSize:"20px"}} gutterBottom>
+              {complaint.content}
+            </Typography>
+            <Typography variant="subtitle" color="textSecondary" align="center" gutterBottom>
+              التاريخ: {complaint.date}
+            </Typography>
+            <Typography variant="subtitle" color="textSecondary" align="center" gutterBottom>
+              رقم الهاتف: {complaint.user.mobile_number}
+            </Typography>
+          </Box>
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  </Box>
   );
 };
 

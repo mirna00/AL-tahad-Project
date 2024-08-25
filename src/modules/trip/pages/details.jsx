@@ -85,7 +85,7 @@ const Details = () => {
     onSuccess: () => {
       queryClient.invalidateQueries("reservations");
       setDeleteSuccess(true);
-      navigate("/السفر/"); // Navigate to the new page
+      navigate("/dashboard/السفر/"); // Navigate to the new page
 
     },
     onError: (error) => {
@@ -440,8 +440,8 @@ const Details = () => {
                               aria-label="info about ID"
                               onClick={() => 
                                  handleItemClick({
-                                image_url: `http://91.144.20.117:7109${order.order_image_of_ID}`,
-                                pdf_url:`http://91.144.20.117:7109${order.order_image_of_ID}`,
+                                image_url: `http://161.35.27.202${order.order_image_of_ID}`,
+                                pdf_url:`http://161.35.27.202${order.order_image_of_ID}`,
                               })}
                             >
                               <InfoIcon className={classes.pdfLink} />
@@ -463,8 +463,8 @@ const Details = () => {
                               aria-label="info about Passport"
                               onClick={() =>
                                 handleItemClick({
-                                  image_url: `http://91.144.20.117:7109${order.order_image_of_passport}`,
-                                  pdf_url: `http://91.144.20.117:7109${order.order_image_of_passport}`,
+                                  image_url: `http://161.35.27.202${order.order_image_of_passport}`,
+                                  pdf_url: `http://161.35.27.202${order.order_image_of_passport}`,
                                 })
                               }
                             >
@@ -489,8 +489,8 @@ const Details = () => {
                               aria-label="info about Security Clearance"
                               onClick={() =>
                                 handleItemClick({
-                                  image_url: `http://91.144.20.117:7109${order.order_image_of_security_clearance}`,
-                                  pdf_url: `http://91.144.20.117:7109${order.order_image_of_security_clearance}`,
+                                  image_url: `http://161.35.27.202${order.order_image_of_security_clearance}`,
+                                  pdf_url: `http://161.35.27.202${order.order_image_of_security_clearance}`,
                                 })
                               }
                             >
@@ -513,8 +513,8 @@ const Details = () => {
                               aria-label="info about Visa"
                               onClick={() =>
                                 handleItemClick({
-                                  image_url: `http://91.144.20.117:7109${order.order_image_of_visa}`,
-                                  pdf_url:`http://91.144.20.117:7109${order.order_image_of_visa}`,
+                                  image_url: `http://161.35.27.202${order.order_image_of_visa}`,
+                                  pdf_url:`http://161.35.27.202${order.order_image_of_visa}`,
                                 })
                               }
                             >
@@ -550,16 +550,7 @@ const Details = () => {
           alt="Enlarged View"
           style={{ maxWidth: '100%', maxHeight: '100%' }}
         />
-       {/* {currentItem.pdf_url && (
-  <a
-    href={currentItem.pdf_url}
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{ marginTop: '16px', display: 'block' }}
-  >
-    View PDF
-  </a>
-)} */}
+  
       </Box>
     </Modal>
   )}

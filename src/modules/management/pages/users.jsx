@@ -19,10 +19,12 @@ import {
   TableBody,
   Table,
 } from "@mui/material";
-
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import { makeStyles } from "@material-ui/core";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { getUser } from "../../../api/UserApi";
+import { getUser ,deleteUser } from "../../../api/UserApi";
+import DangerousIcon from "@mui/icons-material/Dangerous";
 
 const useStyles = makeStyles((theme) => ({
   Typography: {
@@ -34,8 +36,10 @@ const useStyles = makeStyles((theme) => ({
 
 const Users = () => {
   const classes = useStyles();
-  const gridHeaders = ["الاسم", "العمر", "الرقم", "العنوان", "Email"];
-
+  const gridHeaders = ["الاسم", "العمر", "الرقم", "العنوان", "البريد الإلكتروني"," "];
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -49,7 +53,21 @@ const Users = () => {
     cacheTime: 300000, // Keep data in cache for 5 minutes
   });
 
+  const deleteUserMutation = useMutation(deleteUser, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("users");
+      setDeleteSuccess(true);
+    },
+  });
 
+  const handleDeleteUser = (user) => {
+    setConfirmDeleteId(user.id); // Set the ID of the user to be deleted
+    setOpenDeleteDialog(true);
+  };
+  const handleConfirmDelete = () => {
+    deleteUserMutation.mutate(confirmDeleteId);
+    setOpenDeleteDialog(false);
+  };
 
   let content;
   if (isLoading) {
@@ -99,9 +117,9 @@ const Users = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users?.map((driver, index) => (
+            {users?.map((user, index) => (
               <TableRow
-                key={index}
+                key={user.id}
                 sx={{
                   backgroundColor:
                     index % 2 === 0 ? "background.paper" : "#EBE6E4",
@@ -118,7 +136,7 @@ const Users = () => {
                         variant="subtitle"
                         className={classes.Typography}
                       >
-                        {driver.name}
+                        {user.name}
                       </Typography>
                     )}
                     {header === "العمر" && (
@@ -126,7 +144,7 @@ const Users = () => {
                         variant="subtitle"
                         className={classes.Typography}
                       >
-                        {driver.age}
+                        {user.age}
                       </Typography>
                     )}
                     {header === "الرقم" && (
@@ -134,7 +152,7 @@ const Users = () => {
                         variant="subtitle"
                         className={classes.Typography}
                       >
-                        {driver.mobile_number}
+                        {user.mobile_number}
                       </Typography>
                     )}
                     {header === "العنوان" && (
@@ -142,16 +160,32 @@ const Users = () => {
                         variant="subtitle"
                         className={classes.Typography}
                       >
-                        {driver.address}
+                        {user.address}
                       </Typography>
                     )}
-                    {header === "Email" && (
+                    {header === "البريد الإلكتروني" && (
                       <Typography
                         variant="subtitle"
                         className={classes.Typography}
                       >
-                        {driver.email}
+                        {user.email}
                       </Typography>
+                    )}
+                     {header === " " && (
+                      <Grid container>
+                        <Grid
+                          item
+                          xs={12}
+                          sx={{ display: "flex", justifyContent: "flex-end" }}
+                        >
+                         
+                          <IconButton>
+                            <DangerousIcon
+                              onClick={() => handleDeleteUser(user)}
+                            />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
                     )}
                   </TableCell>
                 ))}
@@ -186,7 +220,43 @@ const Users = () => {
       >
         المُستخدمين{" "}
       </Typography>
-
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
+        <DialogTitle  sx={{ m: 0, p: 2, textAlign: "center" }} id="customized-dialog-title">تأكيد الحذف</DialogTitle>
+        <DialogContent >
+          <DialogContentText>
+            هل أنت متأكد أنك تريد حذف هذا المُستخدم؟
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>إلغاء</Button>
+          <Button onClick={handleConfirmDelete} color="primary">
+            حذف
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {deleteSuccess && (
+        <Snackbar
+          open={deleteSuccess}
+          autoHideDuration={6000}
+          onClose={() => setDeleteSuccess(false)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+        >
+          <Alert
+            onClose={() => setDeleteSuccess(false)}
+            severity="success"
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+           تم حذف المُستخدم بنجاح
+          </Alert>
+        </Snackbar>
+      )}
       {content}
     </div>
   );

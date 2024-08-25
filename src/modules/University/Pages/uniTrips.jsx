@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Bus from "../../../assets/buses/BUS.png";
 import Bus1 from "../../../assets/buses/BUS2.png";
-import Frame from "../../../assets/buses/Frame.png"
+import Frame from "../../../assets/buses/Frame.png";
 
 import {
   Grid,
@@ -119,8 +119,8 @@ const AllUni = () => {
     stations: [
       {
         name: "",
-        in_time: [null],
-        out_time: [null],
+        in_time: dayjs().format("hh:mm A"), // Set initial time to AM/PM format
+        out_time:null, // Set initial time to AM/PM format
         type: "",
       },
     ],
@@ -186,60 +186,59 @@ const AllUni = () => {
 
   const handleStationChange = (event, index, field) => {
     const { value } = event.target;
+
+    // If updating time fields, format them in AM/PM
+    const formattedValue =
+      field === "in_time" || field === "out_time"
+      ? value ? formatTimeValueAMPM(value) : null // Set to null if value is empty
+      : value;
+
     setNewTripUni((prevState) => {
       const updatedStations = [...prevState.stations];
-      updatedStations[index][field] = value;
+      updatedStations[index][field] = formattedValue;
       return {
         ...prevState,
         stations: updatedStations,
       };
     });
   };
-
   function formatTimeValueAMPM(timeValue) {
-    if (!timeValue) return null;
-
-    const timeDate = dayjs(timeValue, "HH:mm:ss");
+    if (!timeValue) return null; // Return null if no value
+   
+    const timeDate = dayjs(timeValue, ["hh:mm A", "HH:mm"], true);
+    
     if (!timeDate.isValid()) {
-      throw new Error("Invalid time value: " + timeValue);
+        throw new Error("Invalid time value: " + timeValue);
     }
 
-    return timeDate.format("h:mmA");
-  }
+    return timeDate.format("h:mm A"); // Use h:mm A format
+}
 
   const handletimeIn = (newValue, index) => {
-    console.log("newValue:", newValue);
-
-    const timeAMPM = newValue ? dayjs(newValue).format("h:mm A") : "";
-    const time24Hour = newValue ? dayjs(newValue).format("HH:mm:ss") : "";
-
-    console.log("timeAMPM:", timeAMPM);
-    console.log("time24Hour:", time24Hour);
-
+    const timeAMPM = newValue ? dayjs(newValue).format("hh:mm A") : "";
+  
     setNewTripUni((prevState) => {
       const updatedStations = [...prevState.stations];
-      updatedStations[index].in_time = time24Hour;
-      updatedStations[index].in_time_ampm = timeAMPM;
+      updatedStations[index].in_time = timeAMPM; // Store as AM/PM format
       return {
         ...prevState,
         stations: updatedStations,
       };
     });
   };
+  
   const handletimeOut = (newValue, index) => {
-    const timeAMPM = newValue ? dayjs(newValue).format("h:mm A") : "";
-    const time24Hour = newValue ? dayjs(newValue).format("HH:mm:ss") : "";
-    setNewTripUni((prevState) => {
-      const updatedStations = [...prevState.stations];
-      updatedStations[index].out_time = time24Hour;
-      updatedStations[index].out_time_ampm = timeAMPM;
-      return {
-        ...prevState,
-        stations: updatedStations,
-      };
-    });
-  };
+    const timeAMPM = newValue ? dayjs(newValue).format("hh:mm A") : null;
 
+    setNewTripUni((prevState) => {
+        const updatedStations = [...prevState.stations];
+        updatedStations[index].out_time = timeAMPM; // Should allow null
+        return {
+            ...prevState,
+            stations: updatedStations,
+        };
+    });
+};
   const { data: drivers } = useQuery("drivers", getDriver);
 
   const addStation = () => {
@@ -247,7 +246,7 @@ const AllUni = () => {
       ...prevState,
       stations: [
         ...prevState.stations,
-        { name: "", in_time: dayjs(), out_time: dayjs(), type: "" },
+        { name: "", in_time: dayjs().format("hh:mm A"), out_time:null, type: "" },
       ],
     }));
   };
@@ -257,14 +256,19 @@ const AllUni = () => {
       console.log("newTrip:", newTripUni);
       // console.log("validationSchema:", validationSchema);
       const value = e.target.value;
-      const time = dayjs(value, "H:mm");
+      const time = dayjs(value, "hh:mm A");
 
       const formattedNewTrip = {
         ...newTripUni,
         driver_id: newTripUni.driver_id ? Number(newTripUni.driver_id) : null,
         days: newTripUni.days || null, // Add the selected day to the formattedNewTrip object
-        in_time: formatTimeValueAMPM(newTripUni.stations.in_time),
-        out_time: formatTimeValueAMPM(newTripUni.stations.out_time),
+        in_time: newTripUni.stations.map((station) =>
+          formatTimeValueAMPM(station.in_time)
+        ),
+        out_time: newTripUni.stations.map((station) =>
+          station.out_time ? formatTimeValueAMPM(station.out_time) : null // Handle null case
+        ),
+      
       };
       await validationSchema.validate(newTripUni, { abortEarly: false });
       const addedTrip = await addTripUniMutation.mutateAsync(formattedNewTrip);
@@ -282,8 +286,8 @@ const AllUni = () => {
         stations: [
           {
             name: "",
-            in_time: [dayjs()],
-            out_time: [dayjs()],
+            in_time: dayjs().format("hh:mm A"), // Set initial time to AM/PM format
+            out_time: dayjs().format("hh:mm A"), // Set initial time to AM/PM format
             type: "",
           },
         ],
@@ -306,12 +310,12 @@ const AllUni = () => {
         setBackendErrors({});
       } else if (typeof error === "object" && error !== null) {
         // Assume this is the backend error object
-        const backendErrorsArray = Object.entries(error.response.data.errors).map(
-          ([field, message]) => ({
-            field,
-            message,
-          })
-        );
+        const backendErrorsArray = Object.entries(
+          error.response.data.errors
+        ).map(([field, message]) => ({
+          field,
+          message,
+        }));
         setBackendErrors(backendErrorsArray);
         setValidationErrors({}); // Clear validation errors
 
@@ -376,7 +380,7 @@ const AllUni = () => {
     !fetchUniversities.data ||
     fetchUniversities.data?.length === 0
   ) {
-    content = <p>No universities available.</p>;
+    content = <Typography>لا يوجد رحل جامعية</Typography>;
   } else {
     const universities = fetchUniversities.data;
     content = (
@@ -570,14 +574,20 @@ const AllUni = () => {
           marginTop: "20px",
         }}
       >
-        <Button variant="contained" onClick={() => setOpenAddDialog(true)}>
+        <Button variant="contained" style={{marginBottom:'15px'}} onClick={() => setOpenAddDialog(true)}>
           رحلة جديدة{" "}
         </Button>
 
         <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-          <DialogTitle>رحلة جديدة</DialogTitle>
+          <DialogTitle
+            style={{ fontWeight: "bold" }}
+            sx={{ m: 0, p: 2, textAlign: "center" }}
+            id="customized-dialog-title"
+          >
+            رحلة جديدة
+          </DialogTitle>
           <form onSubmit={handleAddTrip} autoComplete="off">
-            <DialogContent>
+            <DialogContent dividers>
               {newTripUni.stations.map((station, index) => (
                 <div
                   key={index}
@@ -599,32 +609,27 @@ const AllUni = () => {
                     sx={{ width: "200px" }} // Adjust the width as per your requirements
                   />
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label={
-                        index === 0 ? "وقت الانطلاق      " : "وقت انطلاق المحطة"
-                      }
-                      value={
-                        newTripUni.stations.in_time
-                          ? dayjs(newTripUni.stations.in_time, "HH:mm")
-                          : null
-                      }
-                      onChange={(newValue) => handletimeIn(newValue, index)}
-                      ampm
-                      format="h:mm A"
-                    />
-                    <TimePicker
-                      label={index === 0 ? "وقت العودة" : "وقت عودة المحطة"}
-                      value={
-                        newTripUni.stations.out_time
-                          ? dayjs(newTripUni.stations.out_time, "HH:mm")
-                          : null
-                      }
-                      onChange={(newValue) => handletimeOut(newValue, index)}
-                      ampm
-                      format="h:mm A"
-                      style={{ position: "relative", right: "28px" }}
-                    />
-                  </LocalizationProvider>
+  <TimePicker
+    label={index === 0 ? "وقت الانطلاق" : "وقت انطلاق المحطة"}
+    value={
+      newTripUni.stations[index].in_time
+        ? dayjs(newTripUni.stations[index].in_time, "hh:mm A")
+        : null
+    }
+    onChange={(newValue) => handletimeIn(newValue, index)}
+    ampm
+  />
+  <TimePicker
+    label={index === 0 ? "وقت العودة" : "وقت عودة المحطة"}
+    value={
+      newTripUni.stations[index].out_time
+        ? dayjs(newTripUni.stations[index].out_time, "hh:mm A")
+        : null
+    }
+    onChange={(newValue) => handletimeOut(newValue, index)}
+    ampm
+  />
+</LocalizationProvider>
                   <Select
                     label="Type"
                     value={station.type}
@@ -633,8 +638,8 @@ const AllUni = () => {
                     }
                     sx={{ width: "120px" }}
                   >
-                    <MenuItem value="Go">Go</MenuItem>
-                    <MenuItem value="Back">Back</MenuItem>
+                    <MenuItem value="Go">ذهاب</MenuItem>
+                    <MenuItem value="Back">عودة</MenuItem>
                   </Select>{" "}
                 </div>
               ))}
@@ -997,10 +1002,19 @@ const AllUni = () => {
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={() => setOpenAddDialog(false)}>
+              <Button
+                variant="contained"
+                style={{ marginLeft: "16px" }}
+                onClick={() => setOpenAddDialog(false)}
+              >
                 <Typography>إلغاء</Typography>
               </Button>
-              <Button type="submit" color="primary">
+              <Button
+                variant="contained"
+                style={{ marginLeft: "16px" }}
+                type="submit"
+                color="primary"
+              >
                 <Typography>إضافة رحلة جامعية</Typography>
               </Button>
             </DialogActions>
@@ -1022,7 +1036,7 @@ const AllUni = () => {
               variant="filled"
               sx={{ width: "100%" }}
             >
-              A Trip Added successfully
+              تم إضافة رحلة جامعيّة
             </Alert>
           </Snackbar>
         )}

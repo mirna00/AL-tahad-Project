@@ -26,8 +26,6 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import * as Yup from "yup";
-import axios from "axios";
 
 import {getDays, getArchUni } from "../../../api/university";
 import { _axios } from "../../../api/axiosApi";
@@ -269,8 +267,8 @@ function ArchiveUni() {
                   >
                     <Grid item>
                       <Link
-                        // to={`/السفر/trips/${trip.id}`}
-                        style={{ textDecoration: "none" }}
+                      to={`/dashboard/الجامعات/arch_trip/${university.id}`}
+                      style={{ textDecoration: "none" }}
                       >
                         <Button
                           variant="contained"
